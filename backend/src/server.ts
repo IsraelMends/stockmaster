@@ -8,6 +8,8 @@ import { router as categoryRouter } from './routes/categoriesRoutes.js'
 
 import { router as productsRouter } from './routes/productRoutes.js'
 
+import { router as supplierRouter } from './routes/suppliersRoutes.js'
+
 dotenv.config()
 
 const app = express();
@@ -20,6 +22,7 @@ app.use(express.json());
 
 app.use(categoryRouter)
 app.use(productsRouter)
+app.use(supplierRouter)
 
 app.get('/', (req, res) => {
     res.json({ message: 'API Funcionando' })
