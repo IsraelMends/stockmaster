@@ -1,0 +1,137 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+//Enums
+enum Role{
+  ADMIN
+  OPERATOR
+}
+
+enum Unit{
+  UN
+  KG
+  LT
+  PCT
+  CX
+}
+
+enum MovimentType{
+  ENTRY
+  EXIT
+  ADJUSTMENT
+}
+
+enum MovimentReason{
+  PURCHASE
+  SALE
+  LOSS
+  RETURN
+  ADJUSTMENT
+}
+
+enum AlertType{
+  LOW_STOCK
+  EXPIRING
+}
+
+
+//Tabelas Do Banco
+
+//Category
+model Category{
+  id Int @id @default(autoincrement())
+  name String
+  description String?
+  products Product[]
+  createdAt DateTime @default(now())
+}
+
+
+//SUPPLIER
+model Supplier{
+  id Int @id @default(autoincrement())
+  name String
+  cnpj String @unique
+  email String?
+  phone String?
+  address String?
+  products Product[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//USER
+model User{
+  id Int @id @default(autoincrement())
+  name String
+  email String @unique
+  password String
+  role Role @default(OPERATOR)
+  stockMoviment StockMoviment[]
+  active Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+//PRODUCT
+model Product{
+  id Int @id @default(autoincrement())
+  name String
+  barcode String?
+  description String?
+  costPrice Float
+  salePrice Float
+  currentStock Int
+  minimumStock Int @default(0)
+  unit Unit
+  categoryId Int
+  category Category @relation(fields: [categoryId], references: [id])
+  supplierId Int
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+  stockMoviment StockMoviment[]
+  active Boolean @default(true)
+  alerts Alert[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//MOVIMENTS
+model StockMoviment{
+  id Int @id @default(autoincrement())
+  productId Int
+  product Product @relation(fields: [productId], references: [id])
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  type MovimentType
+  reason MovimentReason
+  quantity Int
+  previousStock Int
+  currentStock Int
+  notes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//Alert
+model Alert{
+  id Int @id @default(autoincrement())
+  productId Int
+  product Product @relation(fields: [productId], references: [id])
+  type AlertType
+  message String
+  read Boolean @default(false)
+  createdAt DateTime @default(now())
+}
