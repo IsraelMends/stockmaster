@@ -75,7 +75,7 @@ const update = async (req: Request, res: Response) => {
 const destroy = async (req: Request, res: Response) => {
 
     const id = Number(req.params.id)
-    const resProduct = await prisma.product.delete({
+    await prisma.product.delete({
         where: { id: id }
     })
 
