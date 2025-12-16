@@ -6,6 +6,8 @@ import dotenv from 'dotenv' //Carrega as informações do arquivo .env
 
 import { router as categoryRouter } from './routes/categoriesRoutes.js'
 
+import { router as productsRouter } from './routes/productRoutes.js'
+
 dotenv.config()
 
 const app = express();
@@ -17,6 +19,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use(categoryRouter)
+app.use(productsRouter)
 
 app.get('/', (req, res) => {
     res.json({ message: 'API Funcionando' })
