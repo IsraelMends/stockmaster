@@ -10,7 +10,7 @@ node_modules/
 dist/
 
 #Prisma
-/src/generated/prisma
+**/generated/
 
 #System
 .DS_Store
