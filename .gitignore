@@ -1,0 +1,17 @@
+#Dependences
+node_modules/
+
+# Keep environment variables out of version control
+.env
+.env.local
+.env.production
+
+#Build
+dist/
+
+#Prisma
+/src/generated/prisma
+
+#System
+.DS_Store
+*.log
