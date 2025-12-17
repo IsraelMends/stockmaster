@@ -4,6 +4,8 @@ import cors from 'cors' //Permite que outros sites acessem minha API
 
 import dotenv from 'dotenv' //Carrega as informações do arquivo .env
 
+import { router as authRouter } from './routes/authRoutes.js'
+
 import { router as categoryRouter } from './routes/categoriesRoutes.js'
 
 import { router as productsRouter } from './routes/productRoutes.js'
@@ -20,6 +22,7 @@ app.use(cors());
 
 app.use(express.json());
 
+app.use(authRouter)
 app.use(categoryRouter)
 app.use(productsRouter)
 app.use(supplierRouter)
