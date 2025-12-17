@@ -312,8 +312,8 @@ npm run db:studio
 - [x] CRUD de Categorias
 - [x] CRUD de Produtos
 - [x] CRUD de Fornecedores
-- [ ] CRUD de Usuários
-- [ ] Autenticação JWT
+- [X] CRUD de Usuários
+- [X] Autenticação JWT
 - [ ] Movimentações de estoque
 
 ### Fase 4: Funcionalidades Avançadas ⏳
