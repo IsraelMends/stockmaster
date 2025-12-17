@@ -12,6 +12,8 @@ import { router as productsRouter } from './routes/productRoutes.js'
 
 import { router as supplierRouter } from './routes/suppliersRoutes.js'
 
+import { router as stockMovimentRouter } from './routes/stockMoviments.js'
+
 dotenv.config()
 
 const app = express();
@@ -26,6 +28,7 @@ app.use(authRouter)
 app.use(categoryRouter)
 app.use(productsRouter)
 app.use(supplierRouter)
+app.use(stockMovimentRouter)
 
 app.get('/', (req, res) => {
     res.json({ message: 'API Funcionando' })
