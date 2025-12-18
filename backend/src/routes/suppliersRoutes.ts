@@ -1,19 +1,42 @@
-import { Router } from 'express'
+import { Router } from "express";
 
-import { index, show, create, update, destroy } from '../controllers/supplierControll.js'
+import {
+  index,
+  show,
+  create,
+  update,
+  destroy,
+} from "../controllers/supplierControll.js";
 
-import { authMiddleware } from '../middlewares/authMiddleware.js'
+import { authMiddleware } from "../middlewares/authMiddleware.js";
 
-const router = Router()
+import {
+  createSupplierSchema,
+  updateSupplierSchema,
+} from "../validations/suppliersValidation.js";
 
-router.get('/suppliers', index)
+import { validate } from "../middlewares/validationMiddleware.js";
 
-router.get('/suppliers/:id', show)
+const router = Router();
 
-router.post('/suppliers', authMiddleware, create)
+router.get("/suppliers", index);
 
-router.put('/suppliers/:id', authMiddleware, update)
+router.get("/suppliers/:id", show);
 
-router.delete('/suppliers/:id', authMiddleware, destroy)
+router.post(
+  "/suppliers",
+  authMiddleware,
+  validate(createSupplierSchema),
+  create
+);
 
-export { router }
+router.put(
+  "/suppliers/:id",
+  authMiddleware,
+  validate(updateSupplierSchema),
+  update
+);
+
+router.delete("/suppliers/:id", authMiddleware, destroy);
+
+export { router };
