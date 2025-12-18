@@ -1,5 +1,7 @@
 import { Request, Response } from 'express'
+
 import { prisma } from '../lib/prisma.js'
+
 
 const create = async (req: Request, res: Response) => {
     const { productId, type, reason, quantity, notes } = req.body
@@ -31,7 +33,7 @@ const create = async (req: Request, res: Response) => {
         })
     }
 
-    const moviment = await prisma.stockMoviment.create({
+    const movement = await prisma.stockMoviment.create({
         data: {
             productId,
             userId,
@@ -49,7 +51,7 @@ const create = async (req: Request, res: Response) => {
         data: { currentStock }
     })
 
-    return res.status(201).json(moviment)
+    return res.status(201).json(movement)
 }
 
 
