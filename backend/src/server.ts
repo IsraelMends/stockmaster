@@ -12,7 +12,7 @@ import { router as productsRouter } from './routes/productRoutes.js'
 
 import { router as supplierRouter } from './routes/suppliersRoutes.js'
 
-import { router as stockMovimentRouter } from './routes/stockMoviments.js'
+import { router as stockMovimentRouter } from './routes/stockMovementsRoutes.js'
 
 dotenv.config()
 
