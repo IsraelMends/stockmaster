@@ -8,7 +8,7 @@ import { prisma } from '../lib/prisma.js'
 
 
 // GET /products
-const index = async (req: Request, res: Response) => {
+const index = async (res: Response) => {
     const products = await prisma.product.findMany()
     return res.json(products)
 }
