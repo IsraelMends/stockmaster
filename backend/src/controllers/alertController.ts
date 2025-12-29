@@ -90,3 +90,53 @@ const markAsRead = async (req: Request, res: Response) => {
     return res.json(updatedAlert);
   }
 };
+
+const markAllAsRead = async (req: Request, res: Response) => {
+  const updateAllAlertsUnreads = await prisma.alert.updateMany({
+    where: {
+      read: false,
+    },
+    data: {
+      read: true,
+    },
+  });
+
+  return res.json({
+    message: `${updateAllAlertsUnreads.count} alert(s) marked as read`,
+    count: updateAllAlertsUnreads.count,
+  });
+};
+
+const countUnread = async (req: Request, res: Response) => {
+  const unread = await prisma.alert.count({
+    where: {
+      read: false,
+    },
+  });
+
+  return res.json({ count: unread });
+};
+
+const destroy = async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+
+  const alert = await prisma.alert.findUnique({
+    where: {
+      id: id,
+    },
+  });
+
+  if (!alert) {
+    return res.status(404).json({ message: "Alert not found" });
+  }
+
+  await prisma.alert.delete({
+    where: {
+      id: id,
+    },
+  });
+
+  return res.status(204).send();
+};
+
+export { index, destroy, markAllAsRead, markAsRead, countUnread, show };
