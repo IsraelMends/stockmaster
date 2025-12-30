@@ -10,11 +10,12 @@ import { validate } from "../middlewares/validationMiddleware.js";
 
 const router = Router();
 
+router.use(authMiddleware);
+
 router.get("/stock-movements", index);
 router.get("/stock-movements/:id", show);
 router.post(
   "/stock-movements",
-  authMiddleware,
   validate(createStockMovementSchema),
   create
 );
