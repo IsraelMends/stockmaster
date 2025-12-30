@@ -1,23 +1,34 @@
-import { Router } from 'express'
+import { Router } from "express";
 
-import { index, show, create, update, destroy } from '../controllers/productController.js'
+import {
+  index,
+  show,
+  create,
+  update,
+  destroy,
+} from "../controllers/productController.js";
 
-import { authMiddleware } from '../middlewares/authMiddleware.js'
+import { authMiddleware } from "../middlewares/authMiddleware.js";
 
-import { updateProductsSchema, createProductsSchema } from '../validations/productsValidation.js'
+import {
+  updateProductsSchema,
+  createProductsSchema,
+} from "../validations/productsValidation.js";
 
-import { validate } from '../middlewares/validationMiddleware.js'
+import { validate } from "../middlewares/validationMiddleware.js";
 
-const router = Router()
+const router = Router();
 
-router.get('/products', index)
+router.use(authMiddleware);
 
-router.get('/products/:id', show)
+router.get("/products", index);
 
-router.post('/products', authMiddleware, validate(createProductsSchema), create)
+router.get("/products/:id", show);
 
-router.put('/products/:id', authMiddleware, validate(updateProductsSchema), update)
+router.post("/products", validate(createProductsSchema), create);
 
-router.delete('/products/:id', authMiddleware, destroy)
+router.put("/products/:id", validate(updateProductsSchema), update);
 
-export { router }
+router.delete("/products/:id", destroy);
+
+export { router };
