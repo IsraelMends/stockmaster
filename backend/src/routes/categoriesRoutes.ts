@@ -1,23 +1,34 @@
-import { Router } from 'express'
+import { Router } from "express";
 
-import { index, show, create, update, destroy } from '../controllers/categoryController.js'
+import {
+  index,
+  show,
+  create,
+  update,
+  destroy,
+} from "../controllers/categoryController.js";
 
-import { authMiddleware } from '../middlewares/authMiddleware.js'
+import { authMiddleware } from "../middlewares/authMiddleware.js";
 
-import { createCategorySchema, updateCategorySchema } from '../validations/categoryValidation.js'
+import {
+  createCategorySchema,
+  updateCategorySchema,
+} from "../validations/categoryValidation.js";
 
-import { validate } from '../middlewares/validationMiddleware.js';
+import { validate } from "../middlewares/validationMiddleware.js";
 
 const router = Router();
 
-router.get('/categories', index)
+router.use(authMiddleware);
 
-router.get('/categories/:id', show)
+router.get("/categories", index);
 
-router.post('/categories', authMiddleware, validate(createCategorySchema), create)
+router.get("/categories/:id", show);
 
-router.put('/categories/:id', authMiddleware, validate(updateCategorySchema), update)
+router.post("/categories", validate(createCategorySchema), create);
 
-router.delete('/categories/:id', authMiddleware, destroy)
+router.put("/categories/:id", validate(updateCategorySchema), update);
 
-export { router }
+router.delete("/categories/:id", destroy);
+
+export { router };
