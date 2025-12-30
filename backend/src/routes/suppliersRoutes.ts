@@ -19,24 +19,16 @@ import { validate } from "../middlewares/validationMiddleware.js";
 
 const router = Router();
 
+router.use(authMiddleware);
+
 router.get("/suppliers", index);
 
 router.get("/suppliers/:id", show);
 
-router.post(
-  "/suppliers",
-  authMiddleware,
-  validate(createSupplierSchema),
-  create
-);
+router.post("/suppliers", validate(createSupplierSchema), create);
 
-router.put(
-  "/suppliers/:id",
-  authMiddleware,
-  validate(updateSupplierSchema),
-  update
-);
+router.put("/suppliers/:id", validate(updateSupplierSchema), update);
 
-router.delete("/suppliers/:id", authMiddleware, destroy);
+router.delete("/suppliers/:id", destroy);
 
 export { router };
