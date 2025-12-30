@@ -16,6 +16,8 @@ import { router as stockMovimentRouter } from "./routes/stockMovementsRoutes.js"
 
 import { router as alertsRouter } from "./routes/alertRoutes.js";
 
+import { errorMiddleware } from "./middlewares/errorMiddleware.js";
+
 dotenv.config();
 
 const app = express();
@@ -34,6 +36,8 @@ app.use(alertsRouter);
 app.get("/", (req, res) => {
   res.json({ message: "API Funcionando" });
 });
+
+app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 3333;
 
