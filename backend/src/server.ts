@@ -44,6 +44,8 @@ app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 3333;
 
+export { app };
+
 app.listen(PORT, () => {
   //Função executada quando o servidor está ligado
   console.log(`HTTP Server is running in port ${PORT}`);
