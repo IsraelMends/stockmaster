@@ -17,11 +17,30 @@ const index = async (req: Request, res: Response) => {
       p.currentStock <= p.minimumStock
   ).length;
 
+  const recentMovements = await prisma.stockMoviment.findMany({
+    take: 5,
+    orderBy: { createdAt: "desc" },
+    include: {
+      product: { select: { name: true } },
+      user: { select: { name: true } },
+    },
+  });
+
+  const totalStockValue = allProducts.reduce(
+    (sum: number, p: { currentStock: number; costPrice: number }) =>
+      sum + p.currentStock * p.costPrice,
+    0
+  );
+
   return res.json({
     totalCategories,
     totalProducts,
     totalSuppliers,
     totalUnreadAlerts,
     lowStockCount,
+    recentMovements,
+    totalStockValue,
   });
 };
+
+export { index };
