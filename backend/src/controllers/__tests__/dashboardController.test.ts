@@ -1,17 +1,26 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 
 import request from "supertest";
 
 import { app } from "../../server.js";
 
+import { createTestUser, getAuthToken } from './helpers.js'
+
 describe("Dashboard Controller", () => {
+  let token: string
+
+  beforeAll(async () => {
+    const user = await createTestUser()
+    token = await getAuthToken(user.email, 'test123')
+  })
+
   it("should return status 200 and all statistics", async () => {
     // test here
     const response = await request(app)
       .get("/dashboard")
       .set(
         "Authorization",
-        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc2NzI5MTY3NSwiZXhwIjoxNzY3ODk2NDc1fQ.gU-hIzoJ_xdNtfMn-j00Tj11Otf33h0PWO_1IkdfxQM"
+        `Bearer ${token}`
       )
       .expect(200);
 
