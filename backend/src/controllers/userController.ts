@@ -67,3 +67,27 @@ const show = async (req: Request, res: Response) => {
 };
 
 // update, destroy and validation to authorization for users
+
+const update = async (req: Request, res: Response) => {
+  const id = Number(req.params.id)
+  const { name, email, role, active, password } = req.body
+
+  if (!id) {
+    return res.status(404).json({ error: 'User not found' })
+  }
+
+  const existEmail = await prisma.user.findUnique({
+    where: {
+      email: email
+    }
+  })
+
+  const updateUser = await prisma.user.findUnique({
+    where: {
+      id: id
+    }
+  })
+
+
+
+}
