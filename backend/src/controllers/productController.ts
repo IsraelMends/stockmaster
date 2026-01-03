@@ -2,84 +2,124 @@
  * Controller for Products
  */
 
-import { Request, Response } from 'express'
+import { Request, Response } from "express";
 
-import { prisma } from '../lib/prisma.js'
-
+import { prisma } from "../lib/prisma.js";
 
 // GET /products
-const index = async (res: Response) => {
-    const products = await prisma.product.findMany()
-    return res.json(products)
-}
+const index = async (req: Request, res: Response) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+
+  const skip = (page - 1) * limit;
+  const total = await prisma.product.count();
+
+  const totalPages = Math.ceil(total / limit);
+  const products = await prisma.product.findMany({
+    skip: skip,
+    take: limit,
+  });
+
+  return res.json({
+    data: products,
+    pagination: {
+      page: page, //actual page
+      limit: limit, // items per page
+      total: total, // total items
+      totalPages: totalPages, // total pages
+    },
+  });
+};
 
 // GET /products/:id
 const show = async (req: Request, res: Response) => {
-    const id = Number(req.params.id)
-    const products = await prisma.product.findUnique({
-        where: { id: id }
-    })
+  const id = Number(req.params.id);
+  const products = await prisma.product.findUnique({
+    where: { id: id },
+  });
 
-    return res.json(products)
-}
+  return res.json(products);
+};
 
 // POST /products
 const create = async (req: Request, res: Response) => {
-    const { name, barcode, description, costPrice, salePrice, currentStock, minimumStock, unit, categoryId, supplierId, active } = req.body
-    const category = await prisma.product.create({
-        data: {
-            name,
-            barcode,
-            description,
-            costPrice,
-            salePrice,
-            currentStock,
-            minimumStock,
-            unit,
-            categoryId,
-            supplierId,
-            active
-        }
-    })
+  const {
+    name,
+    barcode,
+    description,
+    costPrice,
+    salePrice,
+    currentStock,
+    minimumStock,
+    unit,
+    categoryId,
+    supplierId,
+    active,
+  } = req.body;
+  const category = await prisma.product.create({
+    data: {
+      name,
+      barcode,
+      description,
+      costPrice,
+      salePrice,
+      currentStock,
+      minimumStock,
+      unit,
+      categoryId,
+      supplierId,
+      active,
+    },
+  });
 
-    return res.json(category)
-}
+  return res.json(category);
+};
 
 // PUT /products/:id
 const update = async (req: Request, res: Response) => {
+  const {
+    name,
+    barcode,
+    description,
+    costPrice,
+    salePrice,
+    currentStock,
+    minimumStock,
+    unit,
+    categoryId,
+    supplierId,
+    active,
+  } = req.body;
+  const id = Number(req.params.id);
 
-    const { name, barcode, description, costPrice, salePrice, currentStock, minimumStock, unit, categoryId, supplierId, active } = req.body
-    const id = Number(req.params.id)
+  const resProduct = await prisma.product.update({
+    where: { id: id },
+    data: {
+      name,
+      barcode,
+      description,
+      costPrice,
+      salePrice,
+      currentStock,
+      minimumStock,
+      unit,
+      categoryId,
+      supplierId,
+      active,
+    },
+  });
 
-    const resProduct = await prisma.product.update({
-        where: { id: id },
-        data: {
-            name,
-            barcode,
-            description,
-            costPrice,
-            salePrice,
-            currentStock,
-            minimumStock,
-            unit,
-            categoryId,
-            supplierId,
-            active
-        }
-    })
-
-    return res.status(201).json(resProduct)
-}
+  return res.status(201).json(resProduct);
+};
 
 // DELETE /products/:id
 const destroy = async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  await prisma.product.delete({
+    where: { id: id },
+  });
 
-    const id = Number(req.params.id)
-    await prisma.product.delete({
-        where: { id: id }
-    })
+  return res.status(204).send();
+};
 
-    return res.status(204).send()
-}
-
-export { index, show, create, update, destroy }
+export { index, show, create, update, destroy };
