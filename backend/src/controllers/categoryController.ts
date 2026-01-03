@@ -2,57 +2,76 @@
  * Controller for Categories
  */
 
-import { Request, Response } from 'express'
-import { prisma } from '../lib/prisma.js'
+import { Request, Response } from "express";
+import { prisma } from "../lib/prisma.js";
 
 // GET /categories
-const index = async (res: Response) => {
-    const categoryResponse = await prisma.category.findMany()
-    return res.json(categoryResponse)
-}
+const index = async (req: Request, res: Response) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+
+  const skip = (page - 1) * limit;
+  const total = await prisma.category.count();
+
+  const totalPages = Math.ceil(total / limit);
+
+  const categoryResponse = await prisma.category.findMany({
+    skip: skip,
+    take: limit,
+  });
+  return res.json({
+    data: categoryResponse,
+    pagination: {
+      page: page,
+      limit: limit,
+      total: total,
+      totalPages: totalPages,
+    },
+  });
+};
 
 //Function to Search by Id
 const show = async (req: Request, res: Response) => {
-    const id = Number(req.params.id)
-    const idResponse = await prisma.category.findUnique({
-        where: { id: id }
-    })
+  const id = Number(req.params.id);
+  const idResponse = await prisma.category.findUnique({
+    where: { id: id },
+  });
 
-    return res.json(idResponse)
-}
+  return res.json(idResponse);
+};
 
 //Function to Create
 const create = async (req: Request, res: Response) => {
-    const { name, description } = req.body
-    const category = await prisma.category.create({
-        data: {
-            name,
-            description
-        }
-    })
-    return res.status(201).json(category)
-}
+  const { name, description } = req.body;
+  const category = await prisma.category.create({
+    data: {
+      name,
+      description,
+    },
+  });
+  return res.status(201).json(category);
+};
 
 //Function to Update
 const update = async (req: Request, res: Response) => {
-    const { name, description } = req.body
-    const id = Number(req.params.id)
-    const category = await prisma.category.update({
-        where: { id: id },
-        data: { name, description }
-    })
+  const { name, description } = req.body;
+  const id = Number(req.params.id);
+  const category = await prisma.category.update({
+    where: { id: id },
+    data: { name, description },
+  });
 
-    return res.json(category)
-}
+  return res.json(category);
+};
 
 //Function to Delete
 const destroy = async (req: Request, res: Response) => {
-    const id = Number(req.params.id)
-    await prisma.category.delete({
-        where: { id: id }
-    })
+  const id = Number(req.params.id);
+  await prisma.category.delete({
+    where: { id: id },
+  });
 
-    return res.status(204).send()
-}
+  return res.status(204).send();
+};
 
-export { index, show, create, update, destroy }
+export { index, show, create, update, destroy };
