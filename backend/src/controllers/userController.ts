@@ -65,3 +65,5 @@ const show = async (req: Request, res: Response) => {
 
   return res.json(user);
 };
+
+// update, destroy and validation to authorization for users
