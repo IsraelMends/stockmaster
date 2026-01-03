@@ -58,7 +58,17 @@ const create = async (req: Request, res: Response) => {
 };
 
 const index = async (req: Request, res: Response) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+
+  const skip = (page - 1) * limit;
+  const total = await prisma.stockMoviment.count();
+
+  const totalPages = Math.ceil(total / limit);
+
   const movement = await prisma.stockMoviment.findMany({
+    skip: skip,
+    take: limit,
     include: {
       product: true,
       user: true,
@@ -68,7 +78,15 @@ const index = async (req: Request, res: Response) => {
     },
   });
 
-  return res.json(movement);
+  return res.json({
+    data: movement,
+    pagination: {
+      page: page,
+      limit: limit,
+      total: total,
+      totalPages: totalPages,
+    },
+  });
 };
 
 const show = async (req: Request, res: Response) => {
