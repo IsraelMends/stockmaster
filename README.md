@@ -205,7 +205,7 @@ http://localhost:3333
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| GET | `/categories` | Lista todas as categorias |
+| GET | `/categories` | Lista todas as categorias (com filtros) |
 | GET | `/categories/:id` | Busca categoria por ID |
 | POST | `/categories` | Cria nova categoria |
 | PUT | `/categories/:id` | Atualiza categoria |
@@ -219,11 +219,16 @@ http://localhost:3333
 }
 ```
 
+**Query params (GET /categories):**
+- `search` - Buscar por nome
+- `page` - Número da página
+- `limit` - Itens por página
+
 ### Produtos
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| GET | `/products` | Lista todos os produtos |
+| GET | `/products` | Lista todos os produtos (com filtros) |
 | GET | `/products/:id` | Busca produto por ID |
 | POST | `/products` | Cria novo produto |
 | PUT | `/products/:id` | Atualiza produto |
@@ -245,11 +250,19 @@ http://localhost:3333
 }
 ```
 
+**Query params (GET /products):**
+- `categoryId` - Filtrar por categoria
+- `supplierId` - Filtrar por fornecedor
+- `active` - Filtrar por ativo/inativo (true/false)
+- `search` - Buscar por nome ou código de barras
+- `page` - Número da página
+- `limit` - Itens por página
+
 ### Fornecedores
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| GET | `/suppliers` | Lista todos os fornecedores |
+| GET | `/suppliers` | Lista todos os fornecedores (com filtros) |
 | GET | `/suppliers/:id` | Busca fornecedor por ID |
 | POST | `/suppliers` | Cria novo fornecedor |
 | PUT | `/suppliers/:id` | Atualiza fornecedor |
@@ -265,6 +278,11 @@ http://localhost:3333
   "address": "Rua das Flores, 123"
 }
 ```
+
+**Query params (GET /suppliers):**
+- `search` - Buscar por nome, CNPJ ou email
+- `page` - Número da página
+- `limit` - Itens por página
 
 ### Autenticação
 
@@ -302,6 +320,11 @@ http://localhost:3333
 | PUT | `/users/:id` | Atualiza usuário | Admin |
 | DELETE | `/users/:id` | Remove usuário | Admin |
 
+**Query params (GET /users):**
+- `search` - Buscar por nome ou email
+- `page` - Número da página
+- `limit` - Itens por página
+
 **Exemplo de body (PUT /users/:id):**
 ```json
 {
@@ -317,7 +340,7 @@ http://localhost:3333
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| GET | `/stock-movements` | Lista movimentações (paginado) |
+| GET | `/stock-movements` | Lista movimentações (paginado, com filtros) |
 | GET | `/stock-movements/:id` | Busca movimentação por ID |
 | POST | `/stock-movements` | Cria nova movimentação |
 
@@ -343,6 +366,31 @@ http://localhost:3333
 - `LOSS` - Perda
 - `RETURN` - Devolução
 - `ADJUSTMENT` - Ajuste
+
+**Query params (GET /stock-movements):**
+- `productId` - Filtrar por produto
+- `userId` - Filtrar por usuário
+- `type` - Filtrar por tipo (ENTRY, EXIT, ADJUSTMENT)
+- `reason` - Filtrar por motivo (PURCHASE, SALE, LOSS, RETURN, ADJUSTMENT)
+- `startDate` - Data inicial (formato: YYYY-MM-DD)
+- `endDate` - Data final (formato: YYYY-MM-DD)
+- `page` - Número da página
+- `limit` - Itens por página
+
+**Exemplos de uso:**
+```bash
+# Movimentações de hoje
+GET /stock-movements?startDate=2024-01-15&endDate=2024-01-15
+
+# Movimentações deste mês
+GET /stock-movements?startDate=2024-01-01&endDate=2024-01-31
+
+# Movimentações de um produto em um período
+GET /stock-movements?productId=1&startDate=2024-01-01&endDate=2024-01-31
+
+# Combinar filtros
+GET /stock-movements?type=ENTRY&startDate=2024-01-01&endDate=2024-01-31
+```
 
 ### Alertas
 
@@ -449,9 +497,10 @@ npm run db:studio
 ### Fase 4: Funcionalidades Avançadas 🔄
 - [x] Alertas de estoque baixo
 - [x] Dashboard com estatísticas
+- [x] Filtros avançados de busca
+- [x] Filtros por data nas movimentações
 - [ ] Relatórios detalhados
 - [ ] Exportar PDF/Excel
-- [ ] Filtros avançados de busca
 
 ### Fase 5: Frontend ⏳
 - [ ] Interface React
