@@ -143,11 +143,23 @@ const update = async (req: Request, res: Response) => {
   return res.status(201).json(resProduct);
 };
 
-// DELETE /products/:id
+// DELETE /products/:id (Soft Delete - desativa o produto)
 const destroy = async (req: Request, res: Response) => {
   const id = Number(req.params.id);
-  await prisma.product.delete({
+
+  // Verificar se o produto existe
+  const product = await prisma.product.findUnique({
     where: { id: id },
+  });
+
+  if (!product) {
+    return res.status(404).json({ error: "Product not found" });
+  }
+
+  // Soft delete: desativar em vez de deletar
+  await prisma.product.update({
+    where: { id: id },
+    data: { active: false },
   });
 
   return res.status(204).send();
