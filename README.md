@@ -226,6 +226,21 @@ O frontend estará rodando em `http://localhost:5173`
 
 ---
 
+## 🚀 Deploy na Nuvem
+
+Para colocar o projeto na nuvem e torná-lo acessível publicamente:
+
+📖 **[COMO-DEPLOYAR.md](./COMO-DEPLOYAR.md)** - Guia rápido e simples (Recomendado)
+
+📖 **[DEPLOY.md](./DEPLOY.md)** - Guia completo com todas as opções
+
+### Opções Recomendadas:
+- **Railway** ⭐ - Mais fácil e grátis para começar
+- **Render** - Grátis, pode "dormir" após inatividade  
+- **Vercel** - Excelente para frontend
+
+---
+
 ## 🐳 Deploy com Docker
 
 ### Usando Docker Compose (Recomendado)
