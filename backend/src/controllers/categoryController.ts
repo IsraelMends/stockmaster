@@ -7,17 +7,25 @@ import { prisma } from "../lib/prisma.js";
 
 // GET /categories
 const index = async (req: Request, res: Response) => {
+  const { search } = req.query
+
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
 
   const skip = (page - 1) * limit;
-  const total = await prisma.category.count();
+  const where: any = {};
 
+  if (search) {
+    where.name = { contains: search as string, mode: 'insensitive' };
+  }
+
+  const total = await prisma.category.count({ where });
   const totalPages = Math.ceil(total / limit);
 
   const categoryResponse = await prisma.category.findMany({
     skip: skip,
     take: limit,
+    where
   });
   return res.json({
     data: categoryResponse,
