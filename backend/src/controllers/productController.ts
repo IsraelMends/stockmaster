@@ -8,16 +8,47 @@ import { prisma } from "../lib/prisma.js";
 
 // GET /products
 const index = async (req: Request, res: Response) => {
+  const { categoryId, supplierId, active, search } = req.query;
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
 
   const skip = (page - 1) * limit;
-  const total = await prisma.product.count();
+  const where: any = {};
 
+  // Filter by category
+  if (categoryId) {
+    where.categoryId = Number(categoryId);
+  }
+
+  // Filter by supplier
+  if (supplierId) {
+    where.supplierId = Number(supplierId);
+  }
+
+  // Filter by active/inactive
+  if (active !== undefined) {
+    where.active = active === "true";
+  }
+
+  // Search by name or barcode
+  if (search) {
+    where.OR = [
+      { name: { contains: search as string, mode: 'insensitive' } },
+      { barcode: { contains: search as string } }
+    ];
+  }
+
+  const total = await prisma.product.count({ where });
   const totalPages = Math.ceil(total / limit);
+
   const products = await prisma.product.findMany({
     skip: skip,
     take: limit,
+    where,
+    include: {
+      category: true,
+      supplier: true
+    }
   });
 
   return res.json({
