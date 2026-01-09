@@ -7,11 +7,10 @@ WORKDIR /app
 # Instalar dependências do sistema necessárias para Prisma
 RUN apk add --no-cache openssl
 
-# Copiar todos os arquivos necessários
+# Copiar package.json
 COPY package.json ./
-COPY package-lock.json ./
 
-# Instalar dependências
+# Instalar dependências (npm install funciona com ou sem package-lock.json)
 RUN npm install
 
 # Copiar o resto do código
