@@ -18,6 +18,8 @@ import { router as alertsRouter } from "./routes/alertRoutes.js";
 
 import { router as dashboardRouter } from "./routes/dashboardRoutes.js";
 
+import { router as userRouter } from "./routes/userRoutes.js";
+
 import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 
 dotenv.config();
@@ -35,6 +37,7 @@ app.use(supplierRouter);
 app.use(stockMovimentRouter);
 app.use(alertsRouter);
 app.use(dashboardRouter);
+app.use(userRouter)
 
 app.get("/", (req, res) => {
   res.json({ message: "API Funcionando" });
