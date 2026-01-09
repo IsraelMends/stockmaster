@@ -232,7 +232,7 @@ http://localhost:3333
 | GET | `/products/:id` | Busca produto por ID |
 | POST | `/products` | Cria novo produto |
 | PUT | `/products/:id` | Atualiza produto |
-| DELETE | `/products/:id` | Remove produto |
+| DELETE | `/products/:id` | Desativa produto (soft delete) |
 
 **Exemplo de body (POST/PUT):**
 ```json
@@ -318,7 +318,7 @@ http://localhost:3333
 | GET | `/users` | Lista todos os usuários | Autenticado |
 | GET | `/users/:id` | Busca usuário por ID | Autenticado |
 | PUT | `/users/:id` | Atualiza usuário | Admin |
-| DELETE | `/users/:id` | Remove usuário | Admin |
+| DELETE | `/users/:id` | Desativa usuário (soft delete) | Admin |
 
 **Query params (GET /users):**
 - `search` - Buscar por nome ou email
@@ -424,9 +424,115 @@ GET /stock-movements?type=ENTRY&startDate=2024-01-01&endDate=2024-01-31
   "totalUnreadAlerts": 3,
   "lowStockCount": 8,
   "totalStockValue": 125000.50,
+  "movementsByPeriod": {
+    "today": 15,
+    "thisWeek": 120,
+    "thisMonth": 450
+  },
+  "movementsByType": {
+    "entries": 200,
+    "exits": 150,
+    "adjustments": 10
+  },
+  "topProducts": [...],
+  "valueByCategory": [...],
   "recentMovements": [...]
 }
 ```
+
+### Relatórios
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/reports/low-stock` | Relatório de produtos com estoque baixo |
+| GET | `/reports/movements` | Relatório de movimentações por período |
+| GET | `/reports/products-by-category` | Relatório de produtos agrupados por categoria |
+
+**Query params (GET /reports/movements):**
+- `startDate` - Data inicial (formato: YYYY-MM-DD)
+- `endDate` - Data final (formato: YYYY-MM-DD)
+- `type` - Filtrar por tipo (ENTRY, EXIT, ADJUSTMENT)
+- `reason` - Filtrar por motivo (PURCHASE, SALE, LOSS, RETURN, ADJUSTMENT)
+
+**Exemplo de uso:**
+```bash
+# Produtos com estoque baixo
+GET /reports/low-stock
+
+# Movimentações deste mês
+GET /reports/movements?startDate=2024-01-01&endDate=2024-01-31
+
+# Movimentações de entrada
+GET /reports/movements?type=ENTRY&startDate=2024-01-01&endDate=2024-01-31
+
+# Produtos por categoria
+GET /reports/products-by-category
+```
+
+**Resposta (GET /reports/low-stock):**
+```json
+{
+  "total": 5,
+  "data": [
+    {
+      "productId": 1,
+      "productName": "Coca-Cola 2L",
+      "currentStock": 10,
+      "minimumStock": 20,
+      "unit": "UN",
+      "difference": 10,
+      "category": { "id": 1, "name": "Bebidas" },
+      "supplier": { "id": 1, "name": "Distribuidora ABC" },
+      "costPrice": 5.50,
+      "salePrice": 8.99
+    }
+  ]
+}
+```
+
+**Resposta (GET /reports/movements):**
+```json
+{
+  "period": {
+    "startDate": "2024-01-01",
+    "endDate": "2024-01-31"
+  },
+  "summary": {
+    "totalMovements": 150,
+    "byType": {
+      "ENTRY": 100,
+      "EXIT": 45,
+      "ADJUSTMENT": 5
+    },
+    "byReason": {
+      "PURCHASE": 80,
+      "SALE": 40,
+      "LOSS": 5
+    },
+    "netQuantity": 55
+  },
+  "data": [...]
+}
+```
+
+---
+
+## 🔒 Soft Delete
+
+O sistema utiliza **Soft Delete** para produtos e usuários. Isso significa que ao "deletar" um registro, ele não é removido permanentemente do banco de dados, mas sim **desativado** (campo `active = false`).
+
+### Benefícios:
+- ✅ Mantém histórico de dados
+- ✅ Permite recuperação de registros
+- ✅ Evita perda de dados importantes
+- ✅ Mantém integridade referencial
+
+### Entidades com Soft Delete:
+- **Produtos**: `DELETE /products/:id` → desativa o produto
+- **Usuários**: `DELETE /users/:id` → desativa o usuário
+
+### Para reativar:
+Use o endpoint `PUT` para atualizar o campo `active` para `true`.
 
 ---
 
@@ -494,12 +600,12 @@ npm run db:studio
 - [x] Autenticação JWT
 - [x] Movimentações de estoque
 
-### Fase 4: Funcionalidades Avançadas 🔄
+### Fase 4: Funcionalidades Avançadas ✅
 - [x] Alertas de estoque baixo
 - [x] Dashboard com estatísticas
 - [x] Filtros avançados de busca
 - [x] Filtros por data nas movimentações
-- [ ] Relatórios detalhados
+- [x] Relatórios detalhados
 - [ ] Exportar PDF/Excel
 
 ### Fase 5: Frontend ⏳
