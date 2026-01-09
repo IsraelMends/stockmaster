@@ -141,8 +141,10 @@ const destroy = async (req: Request, res: Response) => {
     return res.status(404).json({ error: 'User not found' })
   }
 
-  await prisma.user.delete({
-    where: { id: userId }
+  // Soft delete: desativar em vez de deletar
+  await prisma.user.update({
+    where: { id: userId },
+    data: { active: false }
   })
 
   return res.status(204).send()
