@@ -7,13 +7,14 @@ WORKDIR /app
 # Instalar dependências do sistema necessárias para Prisma
 RUN apk add --no-cache openssl
 
-# Copiar arquivos de dependências
-COPY package*.json ./
+# Copiar todos os arquivos necessários
+COPY package.json ./
+COPY package-lock.json ./
 
-# Instalar dependências (incluindo devDependencies para build)
-RUN npm ci
+# Instalar dependências
+RUN npm install
 
-# Copiar tudo de uma vez (incluindo prisma e código)
+# Copiar o resto do código
 COPY . .
 
 # Gerar Prisma Client
