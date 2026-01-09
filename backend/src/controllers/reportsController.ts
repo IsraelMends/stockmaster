@@ -4,6 +4,7 @@
 
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
+import { convertToCSV, flattenObject } from "../utils/csvExporter.js";
 
 // GET /reports/low-stock - Relatório de produtos com estoque baixo
 const lowStock = async (req: Request, res: Response) => {
@@ -51,6 +52,19 @@ const lowStock = async (req: Request, res: Response) => {
     costPrice: product.costPrice,
     salePrice: product.salePrice,
   }));
+
+  // Verificar formato de exportação
+  const format = req.query.format as string;
+
+  if (format === "csv") {
+    // Achatizar objetos aninhados para CSV
+    const flattenedData = report.map((item) => flattenObject(item));
+    const csv = convertToCSV(flattenedData);
+    
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", "attachment; filename=low-stock-products.csv");
+    return res.send(csv);
+  }
 
   return res.json({
     total: report.length,
@@ -154,6 +168,34 @@ const movements = async (req: Request, res: Response) => {
     }
   });
 
+  // Verificar formato de exportação
+  const format = req.query.format as string;
+
+  if (format === "csv") {
+    // Achatizar objetos aninhados para CSV
+    const flattenedData = movements.map((movement) => ({
+      id: movement.id,
+      productId: movement.productId,
+      productName: movement.product.name,
+      productUnit: movement.product.unit,
+      userId: movement.userId,
+      userName: movement.user.name,
+      type: movement.type,
+      reason: movement.reason,
+      quantity: movement.quantity,
+      previousStock: movement.previousStock,
+      currentStock: movement.currentStock,
+      notes: movement.notes || "",
+      createdAt: movement.createdAt.toISOString(),
+    }));
+    
+    const csv = convertToCSV(flattenedData);
+    
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", "attachment; filename=movements-report.csv");
+    return res.send(csv);
+  }
+
   return res.json({
     period: {
       startDate: startDate || null,
@@ -219,6 +261,38 @@ const productsByCategory = async (req: Request, res: Response) => {
       })),
     };
   });
+
+  // Verificar formato de exportação
+  const format = req.query.format as string;
+
+  if (format === "csv") {
+    // Para CSV, vamos criar uma linha por produto (não agrupado)
+    const allProducts: any[] = [];
+    
+    report.forEach((category) => {
+      category.products.forEach((product: any) => {
+        allProducts.push({
+          categoryId: category.categoryId,
+          categoryName: category.categoryName,
+          productId: product.id,
+          productName: product.name,
+          currentStock: product.currentStock,
+          minimumStock: product.minimumStock,
+          unit: product.unit,
+          costPrice: product.costPrice,
+          salePrice: product.salePrice,
+          supplierId: product.supplier.id,
+          supplierName: product.supplier.name,
+        });
+      });
+    });
+    
+    const csv = convertToCSV(allProducts);
+    
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", "attachment; filename=products-by-category.csv");
+    return res.send(csv);
+  }
 
   return res.json({
     totalCategories: report.length,
