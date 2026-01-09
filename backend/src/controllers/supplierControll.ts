@@ -8,17 +8,29 @@ import { prisma } from "../lib/prisma.js";
 
 // GET /suppliers
 const index = async (req: Request, res: Response) => {
+  const { search } = req.query
+
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
 
   const skip = (page - 1) * limit;
-  const total = await prisma.supplier.count();
+  const where: any = {}
 
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: 'insensitive' } },
+      { cnpj: { contains: search } },
+      { email: { contains: search, mode: 'insensitive' } }
+    ];
+  }
+
+  const total = await prisma.supplier.count({ where });
   const totalPages = Math.ceil(total / limit);
 
   const suppliers = await prisma.supplier.findMany({
     skip: skip,
     take: limit,
+    where
   });
   return res.json({
     data: suppliers,
