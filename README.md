@@ -36,12 +36,16 @@ O **StockMaster** é um sistema completo de controle de estoque que permite:
 | Zod | 4.x | Validação de dados |
 | bcryptjs | - | Criptografia de senhas |
 
-### Frontend (Em breve)
+### Frontend ✅
 | Tecnologia | Descrição |
 |------------|-----------|
 | React | Biblioteca UI |
+| TypeScript | Tipagem estática |
+| Vite | Build tool |
 | TailwindCSS | Estilização |
-| React Query | Gerenciamento de estado |
+| React Query | Gerenciamento de estado e cache |
+| React Router | Roteamento |
+| Axios | Cliente HTTP |
 
 ---
 
@@ -85,7 +89,14 @@ stockmaster/
 │   │   └── schema.prisma     # Modelo do banco de dados
 │   ├── package.json
 │   └── tsconfig.json
-├── frontend/                 # (Em breve)
+├── frontend/                 # Frontend React
+│   ├── src/
+│   │   ├── components/      # Componentes reutilizáveis
+│   │   ├── pages/            # Páginas da aplicação
+│   │   ├── lib/              # Configurações (API client)
+│   │   └── main.tsx          # Entrada da aplicação
+│   ├── package.json
+│   └── vite.config.ts
 └── README.md
 ```
 
@@ -191,6 +202,64 @@ npm run dev
 ```
 
 O servidor estará rodando em `http://localhost:3333`
+
+### Frontend
+
+1. **Instale as dependências**
+```bash
+cd frontend
+npm install
+```
+
+2. **Configure as variáveis de ambiente**
+```bash
+# Crie o arquivo .env na pasta frontend
+echo "VITE_API_URL=http://localhost:3333" > .env
+```
+
+3. **Inicie o servidor de desenvolvimento**
+```bash
+npm run dev
+```
+
+O frontend estará rodando em `http://localhost:5173`
+
+---
+
+## 🐳 Deploy com Docker
+
+### Usando Docker Compose (Recomendado)
+
+1. **Configure as variáveis de ambiente**
+```bash
+# Edite o arquivo docker-compose.yml com suas configurações
+# Especialmente: JWT_SECRET e senha do PostgreSQL
+```
+
+2. **Inicie os containers**
+```bash
+docker-compose up -d
+```
+
+3. **Acesse a aplicação**
+- Frontend: `http://localhost`
+- Backend: `http://localhost:3333`
+
+### Build manual
+
+**Backend:**
+```bash
+cd backend
+docker build -t stockmaster-backend .
+docker run -p 3333:3333 stockmaster-backend
+```
+
+**Frontend:**
+```bash
+cd frontend
+docker build -t stockmaster-frontend .
+docker run -p 80:80 stockmaster-frontend
+```
 
 ---
 
@@ -618,15 +687,20 @@ npm run db:studio
 - [x] Exportar dados em CSV/JSON
 - [ ] Exportar PDF/Excel
 
-### Fase 5: Frontend ⏳
-- [ ] Interface React
-- [ ] Telas de CRUD
-- [ ] Dashboard visual
-- [ ] Gráficos
+### Fase 5: Frontend 🔄
+- [x] Setup React + TypeScript + Vite
+- [x] Configuração TailwindCSS
+- [x] Configuração React Query
+- [x] Tela de Login
+- [x] Dashboard básico
+- [x] Listagem de Produtos
+- [ ] CRUD completo de todas as entidades
+- [ ] Gráficos e visualizações
 
-### Fase 6: Deploy ⏳
-- [ ] Containerização (Docker)
-- [ ] Deploy na nuvem
+### Fase 6: Deploy ✅
+- [x] Containerização (Docker)
+- [x] Docker Compose para desenvolvimento
+- [ ] Deploy na nuvem (AWS, Railway, Render, etc)
 - [ ] CI/CD
 
 ---
