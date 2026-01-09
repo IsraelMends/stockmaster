@@ -453,6 +453,10 @@ GET /stock-movements?type=ENTRY&startDate=2024-01-01&endDate=2024-01-31
 - `endDate` - Data final (formato: YYYY-MM-DD)
 - `type` - Filtrar por tipo (ENTRY, EXIT, ADJUSTMENT)
 - `reason` - Filtrar por motivo (PURCHASE, SALE, LOSS, RETURN, ADJUSTMENT)
+- `format` - Formato de exportação (csv ou json, padrão: json)
+
+**Query params (todos os relatórios):**
+- `format` - Formato de exportação: `csv` para download em CSV ou `json` para JSON (padrão)
 
 **Exemplo de uso:**
 ```bash
@@ -467,6 +471,11 @@ GET /reports/movements?type=ENTRY&startDate=2024-01-01&endDate=2024-01-31
 
 # Produtos por categoria
 GET /reports/products-by-category
+
+# Exportar em CSV
+GET /reports/low-stock?format=csv
+GET /reports/movements?startDate=2024-01-01&endDate=2024-01-31&format=csv
+GET /reports/products-by-category?format=csv
 ```
 
 **Resposta (GET /reports/low-stock):**
@@ -606,6 +615,7 @@ npm run db:studio
 - [x] Filtros avançados de busca
 - [x] Filtros por data nas movimentações
 - [x] Relatórios detalhados
+- [x] Exportar dados em CSV/JSON
 - [ ] Exportar PDF/Excel
 
 ### Fase 5: Frontend ⏳
