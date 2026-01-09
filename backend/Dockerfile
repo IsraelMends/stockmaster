@@ -16,8 +16,9 @@ RUN npm install
 # Copiar o resto do código
 COPY . .
 
-# Gerar Prisma Client
-RUN npx prisma generate
+# Gerar Prisma Client (usa DATABASE_URL temporária apenas para validação)
+# O Prisma precisa da URL para validar o schema, mas não precisa estar conectado
+RUN DATABASE_URL="postgresql://user:password@localhost:5432/db?schema=public" npx prisma generate
 
 # Build da aplicação
 RUN npm run build
