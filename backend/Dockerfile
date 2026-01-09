@@ -13,14 +13,11 @@ COPY package*.json ./
 # Instalar dependências (incluindo devDependencies para build)
 RUN npm ci
 
-# Copiar schema do Prisma
-COPY prisma ./prisma/
+# Copiar tudo de uma vez (incluindo prisma e código)
+COPY . .
 
 # Gerar Prisma Client
 RUN npx prisma generate
-
-# Copiar código fonte
-COPY . .
 
 # Build da aplicação
 RUN npm run build
