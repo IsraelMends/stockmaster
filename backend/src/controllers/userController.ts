@@ -4,6 +4,7 @@
 
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
+import bcrypt from "bcryptjs";
 
 const index = async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
@@ -82,12 +83,58 @@ const update = async (req: Request, res: Response) => {
     }
   })
 
+  if (existEmail && existEmail.id !== id) {
+    return res.status(400).json({ error: 'Email is already in use' })
+  }
+
   const updateUser = await prisma.user.findUnique({
     where: {
       id: id
+    },
+  })
+
+  if (!updateUser) {
+    return res.status(404).json({ error: 'User not found' })
+  }
+
+  const updateData: any = {}
+  if (name) updateData.name = name
+  if (email) updateData.email = email
+  if (role) updateData.role = role
+  if (active !== undefined) updateData.active = active
+  if (password) {
+    updateData.password = await bcrypt.hash(password, 10)
+  }
+
+
+  const updatedUser = await prisma.user.update({
+    where: { id: id },
+    data: updateData
+  })
+
+  const { password: _, ...userWithoutPassword } = updatedUser
+
+  return res.json(userWithoutPassword)
+}
+
+const destroy = async (req: Request, res: Response) => {
+  const userId = Number(req.params.id)
+
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId
     }
   })
 
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' })
+  }
 
+  await prisma.user.delete({
+    where: { id: userId }
+  })
 
+  return res.status(204).send()
 }
+
+export { index, show, update, destroy }
