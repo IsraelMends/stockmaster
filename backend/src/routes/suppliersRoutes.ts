@@ -6,7 +6,7 @@ import {
   create,
   update,
   destroy,
-} from "../controllers/supplierControll.js";
+} from "../controllers/supplierController.js";
 
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
