@@ -23,6 +23,9 @@ RUN DATABASE_URL="postgresql://user:password@localhost:5432/db?schema=public" np
 # Build da aplicação
 RUN npm run build
 
+# Copiar Prisma Client gerado para dist (necessário para runtime)
+RUN cp -r src/generated dist/generated
+
 # Expor porta
 EXPOSE 3333
 
