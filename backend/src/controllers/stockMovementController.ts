@@ -58,7 +58,7 @@ const create = async (req: Request, res: Response) => {
 };
 
 const index = async (req: Request, res: Response) => {
-  const { productId, userId, type, reason } = req.query;
+  const { productId, userId, type, reason, startDate, endDate } = req.query;
 
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
@@ -84,6 +84,71 @@ const index = async (req: Request, res: Response) => {
   // Filter by reason
   if (reason) {
     where.reason = reason;
+  }
+
+  // Filter by date range
+  if (startDate || endDate) {
+    // Validar formato da data (YYYY-MM-DD)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    
+    if (startDate && !dateRegex.test(startDate as string)) {
+      return res.status(400).json({
+        error: "Invalid startDate format. Use YYYY-MM-DD",
+      });
+    }
+    
+    if (endDate && !dateRegex.test(endDate as string)) {
+      return res.status(400).json({
+        error: "Invalid endDate format. Use YYYY-MM-DD",
+      });
+    }
+    
+    // Validar se as datas são válidas
+    if (startDate) {
+      const start = new Date(startDate as string);
+      if (isNaN(start.getTime())) {
+        return res.status(400).json({
+          error: "Invalid startDate. Please provide a valid date",
+        });
+      }
+    }
+    
+    if (endDate) {
+      const end = new Date(endDate as string);
+      if (isNaN(end.getTime())) {
+        return res.status(400).json({
+          error: "Invalid endDate. Please provide a valid date",
+        });
+      }
+    }
+    
+    // Validar se startDate não é maior que endDate
+    if (startDate && endDate) {
+      const start = new Date(startDate as string);
+      const end = new Date(endDate as string);
+      
+      if (start > end) {
+        return res.status(400).json({
+          error: "startDate cannot be greater than endDate",
+        });
+      }
+    }
+    
+    where.createdAt = {};
+    
+    if (startDate) {
+      // Início do dia (00:00:00)
+      const start = new Date(startDate as string);
+      start.setHours(0, 0, 0, 0);
+      where.createdAt.gte = start;
+    }
+    
+    if (endDate) {
+      // Final do dia (23:59:59.999)
+      const end = new Date(endDate as string);
+      end.setHours(23, 59, 59, 999);
+      where.createdAt.lte = end;
+    }
   }
 
   const total = await prisma.stockMoviment.count({ where });
