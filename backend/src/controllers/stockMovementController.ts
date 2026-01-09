@@ -58,17 +58,41 @@ const create = async (req: Request, res: Response) => {
 };
 
 const index = async (req: Request, res: Response) => {
+  const { productId, userId, type, reason } = req.query;
+
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
 
   const skip = (page - 1) * limit;
-  const total = await prisma.stockMoviment.count();
+  const where: any = {};
 
+  // Filter by product
+  if (productId) {
+    where.productId = Number(productId);
+  }
+
+  // Filter by user
+  if (userId) {
+    where.userId = Number(userId);
+  }
+
+  // Filter by movement type
+  if (type) {
+    where.type = type;
+  }
+
+  // Filter by reason
+  if (reason) {
+    where.reason = reason;
+  }
+
+  const total = await prisma.stockMoviment.count({ where });
   const totalPages = Math.ceil(total / limit);
 
   const movement = await prisma.stockMoviment.findMany({
     skip: skip,
     take: limit,
+    where,
     include: {
       product: true,
       user: true,
