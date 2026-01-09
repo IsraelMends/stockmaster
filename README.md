@@ -32,7 +32,7 @@ O **StockMaster** é um sistema completo de controle de estoque que permite:
 | TypeScript | 5.x | Superset JavaScript com tipagem |
 | Prisma | 7.x | ORM para banco de dados |
 | PostgreSQL | 16+ | Banco de dados relacional |
-| JWT | - | Autenticação (em desenvolvimento) |
+| JWT | - | Autenticação e autorização |
 | Zod | 4.x | Validação de dados |
 | bcryptjs | - | Criptografia de senhas |
 
@@ -52,13 +52,29 @@ stockmaster/
 ├── backend/
 │   ├── src/
 │   │   ├── controllers/      # Controladores (lógica das rotas)
+│   │   │   ├── alertController.ts
+│   │   │   ├── authController.ts
 │   │   │   ├── categoryController.ts
+│   │   │   ├── dashboardController.ts
 │   │   │   ├── productController.ts
-│   │   │   └── supplierControll.ts
+│   │   │   ├── stockMovementController.ts
+│   │   │   ├── supplierControll.ts
+│   │   │   └── userController.ts
 │   │   ├── routes/           # Definição das rotas
+│   │   │   ├── alertRoutes.ts
+│   │   │   ├── authRoutes.ts
 │   │   │   ├── categoriesRoutes.ts
+│   │   │   ├── dashboardRoutes.ts
 │   │   │   ├── productRoutes.ts
-│   │   │   └── suppliersRoutes.ts
+│   │   │   ├── stockMovementsRoutes.ts
+│   │   │   ├── suppliersRoutes.ts
+│   │   │   └── userRoutes.ts
+│   │   ├── validations/      # Validações com Zod
+│   │   │   ├── categoryValidation.ts
+│   │   │   ├── productsValidation.ts
+│   │   │   ├── stockMovementValidation.ts
+│   │   │   ├── suppliersValidation.ts
+│   │   │   └── userValidation.ts
 │   │   ├── lib/              # Configurações
 │   │   │   └── prisma.ts     # Cliente Prisma
 │   │   ├── middlewares/      # Middlewares (auth, validação)
@@ -250,6 +266,120 @@ http://localhost:3333
 }
 ```
 
+### Autenticação
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/auth/register` | Registra novo usuário |
+| POST | `/auth/login` | Faz login e retorna token JWT |
+
+**Exemplo de body (POST /auth/register):**
+```json
+{
+  "name": "João Silva",
+  "email": "joao@email.com",
+  "password": "senha123",
+  "role": "ADMIN"
+}
+```
+
+**Exemplo de body (POST /auth/login):**
+```json
+{
+  "email": "joao@email.com",
+  "password": "senha123"
+}
+```
+
+**Nota:** Todas as rotas abaixo (exceto autenticação) requerem o header `Authorization: Bearer <token>`
+
+### Usuários
+
+| Método | Endpoint | Descrição | Permissão |
+|--------|----------|-----------|-----------|
+| GET | `/users` | Lista todos os usuários | Autenticado |
+| GET | `/users/:id` | Busca usuário por ID | Autenticado |
+| PUT | `/users/:id` | Atualiza usuário | Admin |
+| DELETE | `/users/:id` | Remove usuário | Admin |
+
+**Exemplo de body (PUT /users/:id):**
+```json
+{
+  "name": "João Silva",
+  "email": "joao@email.com",
+  "password": "novaSenha123",
+  "role": "ADMIN",
+  "active": true
+}
+```
+
+### Movimentações de Estoque
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/stock-movements` | Lista movimentações (paginado) |
+| GET | `/stock-movements/:id` | Busca movimentação por ID |
+| POST | `/stock-movements` | Cria nova movimentação |
+
+**Exemplo de body (POST /stock-movements):**
+```json
+{
+  "productId": 1,
+  "type": "ENTRY",
+  "reason": "PURCHASE",
+  "quantity": 50,
+  "notes": "Compra de fornecedor"
+}
+```
+
+**Tipos de movimentação:**
+- `ENTRY` - Entrada de estoque
+- `EXIT` - Saída de estoque
+- `ADJUSTMENT` - Ajuste de estoque
+
+**Motivos:**
+- `PURCHASE` - Compra
+- `SALE` - Venda
+- `LOSS` - Perda
+- `RETURN` - Devolução
+- `ADJUSTMENT` - Ajuste
+
+### Alertas
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/alerts` | Lista alertas (paginado, com filtros) |
+| GET | `/alerts/:id` | Busca alerta por ID |
+| GET | `/alerts/unread/count` | Conta alertas não lidos |
+| PATCH | `/alerts/:id/read` | Marca alerta como lido |
+| PATCH | `/alerts/read-all` | Marca todos os alertas como lidos |
+| DELETE | `/alerts/:id` | Remove alerta |
+
+**Query params (GET /alerts):**
+- `read` - Filtrar por lidos/não lidos (true/false)
+- `type` - Filtrar por tipo (LOW_STOCK, EXPIRING)
+- `page` - Número da página
+- `limit` - Itens por página
+
+### Dashboard
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/dashboard` | Retorna estatísticas gerais |
+
+**Resposta:**
+```json
+{
+  "totalCategories": 10,
+  "totalProducts": 150,
+  "totalSuppliers": 5,
+  "totalUnreadAlerts": 3,
+  "lowStockCount": 8,
+  "totalStockValue": 125000.50,
+  "recentMovements": [...]
+}
+```
+
 ---
 
 ## 🧪 Testando a API
@@ -308,19 +438,20 @@ npm run db:studio
 - [x] Configuração do Prisma + PostgreSQL
 - [x] Estrutura de pastas
 
-### Fase 3: Funcionalidades Básicas 🔄
+### Fase 3: Funcionalidades Básicas ✅
 - [x] CRUD de Categorias
 - [x] CRUD de Produtos
 - [x] CRUD de Fornecedores
-- [X] CRUD de Usuários
-- [X] Autenticação JWT
-- [ ] Movimentações de estoque
+- [x] CRUD de Usuários
+- [x] Autenticação JWT
+- [x] Movimentações de estoque
 
-### Fase 4: Funcionalidades Avançadas ⏳
-- [ ] Alertas de estoque baixo
-- [ ] Relatórios
-- [ ] Dashboard
+### Fase 4: Funcionalidades Avançadas 🔄
+- [x] Alertas de estoque baixo
+- [x] Dashboard com estatísticas
+- [ ] Relatórios detalhados
 - [ ] Exportar PDF/Excel
+- [ ] Filtros avançados de busca
 
 ### Fase 5: Frontend ⏳
 - [ ] Interface React
