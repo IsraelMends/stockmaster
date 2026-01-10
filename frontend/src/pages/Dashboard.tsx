@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import api from '../lib/api'
+import { CardSkeleton } from '../components/Skeleton'
 
 export function Dashboard() {
   const { data, isLoading, error } = useQuery({
@@ -31,7 +32,16 @@ export function Dashboard() {
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        {isLoading ? (
+          <>
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+          </>
+        ) : (
+          <>
+            <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -110,6 +120,8 @@ export function Dashboard() {
             </div>
           </div>
         </div>
+          </>
+        )}
       </div>
 
       <div className="mt-8">
