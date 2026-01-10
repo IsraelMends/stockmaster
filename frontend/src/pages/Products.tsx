@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '../lib/api'
+import { useToastContext } from '../contexts/ToastContext'
+import { ProductSkeleton } from '../components/Skeleton'
 
 interface Product {
   id: number
@@ -31,6 +33,7 @@ interface Supplier {
 
 export function Products() {
   const queryClient = useQueryClient()
+  const { showToast } = useToastContext()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [search, setSearch] = useState('')
@@ -89,6 +92,13 @@ export function Products() {
       queryClient.invalidateQueries({ queryKey: ['products'] })
       setIsModalOpen(false)
       setEditingProduct(null)
+      showToast(
+        editingProduct ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!',
+        'success'
+      )
+    },
+    onError: () => {
+      showToast('Erro ao salvar produto. Tente novamente.', 'error')
     },
   })
 
@@ -99,6 +109,10 @@ export function Products() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
+      showToast('Produto desativado com sucesso!', 'success')
+    },
+    onError: () => {
+      showToast('Erro ao desativar produto. Tente novamente.', 'error')
     },
   })
 
@@ -108,7 +122,7 @@ export function Products() {
   }
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Tem certeza que deseja desativar este produto?')) {
+    if (window.confirm('Tem certeza que deseja desativar este produto? Esta ação pode ser revertida editando o produto.')) {
       deleteMutation.mutate(id)
     }
   }
@@ -229,8 +243,14 @@ export function Products() {
 
       {/* Products List */}
       {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="text-gray-600">Carregando produtos...</div>
+        <div className="bg-white shadow overflow-hidden sm:rounded-md">
+          {[...Array(5)].map((_, i) => (
+            <ProductSkeleton key={i} />
+          ))}
+        </div>
+      ) : data?.data?.length === 0 ? (
+        <div className="bg-white shadow rounded-lg p-8 text-center">
+          <p className="text-gray-500">Nenhum produto encontrado</p>
         </div>
       ) : (
         <>
