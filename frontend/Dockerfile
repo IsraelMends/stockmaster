@@ -8,12 +8,15 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instalar dependências
-RUN npm ci
+RUN npm install
 
 # Copiar código fonte
 COPY . .
 
 # Build da aplicação
+# Variáveis de ambiente devem ser passadas como ARG no build
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # Stage de produção
