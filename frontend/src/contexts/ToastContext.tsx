@@ -1,28 +1,24 @@
-import { createContext, useContext, type ReactNode } from 'react'
-import { useToast } from '../hooks/useToast'
-import { ToastContainer } from '../components/Toast'
+// Este arquivo está mantido apenas para compatibilidade
+// Agora estamos usando react-hot-toast diretamente
+import toast from 'react-hot-toast'
 
-interface ToastContextType {
-  showToast: (message: string, type?: 'success' | 'error' | 'info') => void
-}
-
-const ToastContext = createContext<ToastContextType | undefined>(undefined)
-
-export function ToastProvider({ children }: { children: ReactNode }) {
-  const { toasts, showToast, removeToast } = useToast()
-
-  return (
-    <ToastContext.Provider value={{ showToast }}>
-      {children}
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
-    </ToastContext.Provider>
-  )
-}
-
-export function useToastContext() {
-  const context = useContext(ToastContext)
-  if (!context) {
-    throw new Error('useToastContext must be used within ToastProvider')
+export function showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
+  switch (type) {
+    case 'success':
+      toast.success(message)
+      break
+    case 'error':
+      toast.error(message)
+      break
+    case 'info':
+      toast(message)
+      break
   }
-  return context
+}
+
+// Wrapper para compatibilidade
+export function useToastContext() {
+  return {
+    showToast,
+  }
 }
