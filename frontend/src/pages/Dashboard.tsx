@@ -45,7 +45,7 @@ export function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <CardSkeleton />
         <CardSkeleton />
         <CardSkeleton />
@@ -56,13 +56,9 @@ export function Dashboard() {
 
   if (error) {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="glass-strong rounded-2xl p-6 border border-red-500/30"
-      >
-        <div className="text-red-300 text-center">Erro ao carregar dashboard</div>
-      </motion.div>
+      <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-6">
+        <div className="text-red-800 dark:text-red-300 text-center">Erro ao carregar dashboard</div>
+      </div>
     )
   }
 
@@ -72,6 +68,8 @@ export function Dashboard() {
       value: data?.totalProducts || 0,
       icon: Package,
       color: 'from-blue-500 to-cyan-500',
+      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+      textColor: 'text-blue-600 dark:text-blue-400',
       change: '+12%',
       trend: 'up' as const,
     },
@@ -80,6 +78,8 @@ export function Dashboard() {
       value: data?.lowStockCount || 0,
       icon: AlertTriangle,
       color: 'from-orange-500 to-red-500',
+      bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+      textColor: 'text-orange-600 dark:text-orange-400',
       change: data?.lowStockCount > 0 ? 'Atenção!' : 'OK',
       trend: data?.lowStockCount > 0 ? ('down' as const) : ('up' as const),
     },
@@ -88,6 +88,8 @@ export function Dashboard() {
       value: data?.totalUnreadAlerts || 0,
       icon: Bell,
       color: 'from-purple-500 to-pink-500',
+      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+      textColor: 'text-purple-600 dark:text-purple-400',
       change: data?.totalUnreadAlerts > 0 ? `${data?.totalUnreadAlerts} novos` : 'Nenhum',
       trend: 'neutral' as const,
     },
@@ -96,6 +98,8 @@ export function Dashboard() {
       value: `R$ ${data?.totalStockValue?.toFixed(2) || '0.00'}`,
       icon: DollarSign,
       color: 'from-green-500 to-emerald-500',
+      bgColor: 'bg-green-50 dark:bg-green-900/20',
+      textColor: 'text-green-600 dark:text-green-400',
       change: '+8.2%',
       trend: 'up' as const,
     },
@@ -113,24 +117,14 @@ export function Dashboard() {
   ] : []
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
-      >
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-white mb-2">Dashboard</h1>
-          <p className="text-gray-400">Visão geral do seu estoque</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Dashboard</h1>
+          <p className="text-slate-600 dark:text-slate-400">Visão geral do seu estoque</p>
         </div>
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          className="glass-strong rounded-xl p-4 border border-white/20"
-        >
-          <Activity className="w-8 h-8 text-purple-400" />
-        </motion.div>
-      </motion.div>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -141,42 +135,33 @@ export function Dashboard() {
               key={stat.name}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.02, y: -5 }}
-              className="glass-strong rounded-2xl p-6 border border-white/20 card-hover relative overflow-hidden group"
+              transition={{ delay: index * 0.05 }}
+              className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm hover:shadow-md transition-shadow"
             >
-              {/* Gradient background on hover */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-              
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg`}>
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  {stat.trend === 'up' && (
-                    <div className="flex items-center text-green-400 text-sm font-semibold">
-                      <ArrowUp className="w-4 h-4 mr-1" />
-                      {stat.change}
-                    </div>
-                  )}
-                  {stat.trend === 'down' && (
-                    <div className="flex items-center text-red-400 text-sm font-semibold">
-                      <ArrowDown className="w-4 h-4 mr-1" />
-                      {stat.change}
-                    </div>
-                  )}
-                  {stat.trend === 'neutral' && (
-                    <div className="text-gray-400 text-sm font-semibold">
-                      {stat.change}
-                    </div>
-                  )}
+              <div className="flex items-center justify-between mb-4">
+                <div className={`w-12 h-12 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
+                  <Icon className={`w-6 h-6 ${stat.textColor}`} />
                 </div>
-                <h3 className="text-gray-400 text-sm font-medium mb-1">{stat.name}</h3>
-                <p className="text-3xl font-bold text-white">{stat.value}</p>
+                {stat.trend === 'up' && (
+                  <div className="flex items-center text-green-600 dark:text-green-400 text-sm font-semibold">
+                    <ArrowUp className="w-4 h-4 mr-1" />
+                    {stat.change}
+                  </div>
+                )}
+                {stat.trend === 'down' && (
+                  <div className="flex items-center text-red-600 dark:text-red-400 text-sm font-semibold">
+                    <ArrowDown className="w-4 h-4 mr-1" />
+                    {stat.change}
+                  </div>
+                )}
+                {stat.trend === 'neutral' && (
+                  <div className="text-slate-500 dark:text-slate-400 text-sm font-semibold">
+                    {stat.change}
+                  </div>
+                )}
               </div>
-
-              {/* Shine effect */}
-              <div className="absolute inset-0 -top-full group-hover:top-full transition-all duration-700 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+              <h3 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">{stat.name}</h3>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</p>
             </motion.div>
           )
         })}
@@ -188,10 +173,10 @@ export function Dashboard() {
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
-          className="glass-strong rounded-2xl p-6 border border-white/20"
+          transition={{ delay: 0.2 }}
+          className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm"
         >
-          <h3 className="text-xl font-bold text-white mb-4">Valor por Categoria</h3>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Valor por Categoria</h3>
           {pieData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -211,17 +196,16 @@ export function Dashboard() {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: '1px solid rgba(0, 0, 0, 0.1)',
                     borderRadius: '8px',
-                    color: '#fff',
                   }}
                   formatter={(value: number | undefined) => `R$ ${value ? value.toFixed(2) : '0.00'}`}
                 />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-64 text-gray-400">
+            <div className="flex items-center justify-center h-64 text-slate-500 dark:text-slate-400">
               Nenhum dado disponível
             </div>
           )}
@@ -231,29 +215,28 @@ export function Dashboard() {
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.5 }}
-          className="glass-strong rounded-2xl p-6 border border-white/20"
+          transition={{ delay: 0.3 }}
+          className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm"
         >
-          <h3 className="text-xl font-bold text-white mb-4">Movimentações por Tipo</h3>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Movimentações por Tipo</h3>
           {barData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={barData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
-                <XAxis dataKey="name" stroke="#9ca3af" />
-                <YAxis stroke="#9ca3af" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="name" stroke="#64748b" />
+                <YAxis stroke="#64748b" />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: '1px solid rgba(0, 0, 0, 0.1)',
                     borderRadius: '8px',
-                    color: '#fff',
                   }}
                 />
                 <Bar dataKey="value" fill="#8b5cf6" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-64 text-gray-400">
+            <div className="flex items-center justify-center h-64 text-slate-500 dark:text-slate-400">
               Nenhum dado disponível
             </div>
           )}
@@ -264,52 +247,54 @@ export function Dashboard() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="glass-strong rounded-2xl p-6 border border-white/20"
+        transition={{ delay: 0.4 }}
+        className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden"
       >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-white">Movimentações Recentes</h3>
-          <TrendingUp className="w-5 h-5 text-purple-400" />
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Movimentações Recentes</h3>
+            <TrendingUp className="w-5 h-5 text-slate-400" />
+          </div>
         </div>
         {data?.recentMovements?.length > 0 ? (
-          <div className="space-y-3">
+          <div className="divide-y divide-slate-200 dark:divide-slate-700">
             {data.recentMovements.map((movement: any, index: number) => (
               <motion.div
                 key={movement.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.7 + index * 0.05 }}
-                className="glass rounded-xl p-4 border border-white/10 hover:border-purple-500/50 transition-all duration-300 group"
+                transition={{ delay: 0.5 + index * 0.03 }}
+                className="px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                       movement.type === 'ENTRY' 
-                        ? 'bg-green-500/20 text-green-400' 
+                        ? 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400' 
                         : movement.type === 'EXIT'
-                        ? 'bg-red-500/20 text-red-400'
-                        : 'bg-yellow-500/20 text-yellow-400'
+                        ? 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                        : 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400'
                     }`}>
                       {movement.type === 'ENTRY' ? (
-                        <ArrowUp className="w-6 h-6" />
+                        <ArrowUp className="w-5 h-5" />
                       ) : movement.type === 'EXIT' ? (
-                        <ArrowDown className="w-6 h-6" />
+                        <ArrowDown className="w-5 h-5" />
                       ) : (
-                        <Activity className="w-6 h-6" />
+                        <Activity className="w-5 h-5" />
                       )}
                     </div>
                     <div>
-                      <p className="text-white font-semibold">{movement.product?.name || 'Produto'}</p>
-                      <p className="text-gray-400 text-sm">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">{movement.product?.name || 'Produto'}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
                         {movement.type} - {movement.reason} • Qtd: {movement.quantity}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
                       {new Date(movement.createdAt).toLocaleDateString('pt-BR')}
                     </p>
-                    <p className="text-gray-500 text-xs">
+                    <p className="text-xs text-slate-500 dark:text-slate-500">
                       {new Date(movement.createdAt).toLocaleTimeString('pt-BR', { 
                         hour: '2-digit', 
                         minute: '2-digit' 
@@ -321,7 +306,7 @@ export function Dashboard() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 text-gray-400">
+          <div className="text-center py-12 text-slate-500 dark:text-slate-400">
             Nenhuma movimentação recente
           </div>
         )}
