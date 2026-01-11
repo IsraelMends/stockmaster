@@ -39,7 +39,7 @@ export function Products() {
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [supplierFilter, setSupplierFilter] = useState('')
-  const [activeFilter, setActiveFilter] = useState<boolean | ''>('')
+  const [activeFilter, setActiveFilter] = useState<string>('')
   const [page, setPage] = useState(1)
   const limit = 10
 
@@ -54,7 +54,7 @@ export function Products() {
       if (search) params.append('search', search)
       if (categoryFilter) params.append('categoryId', categoryFilter)
       if (supplierFilter) params.append('supplierId', supplierFilter)
-      if (activeFilter !== '') params.append('active', activeFilter.toString())
+      if (activeFilter !== '') params.append('active', activeFilter)
       
       const response = await api.get(`/products?${params}`)
       return response.data
@@ -228,7 +228,7 @@ export function Products() {
             <select
               value={activeFilter}
               onChange={(e) => {
-                setActiveFilter(e.target.value === '' ? '' : e.target.value === 'true')
+                setActiveFilter(e.target.value)
                 setPage(1)
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
