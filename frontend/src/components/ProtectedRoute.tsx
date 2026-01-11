@@ -1,4 +1,4 @@
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -7,7 +7,6 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
   const token = localStorage.getItem('token')
-  const location = useLocation()
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
   if (!token) {
