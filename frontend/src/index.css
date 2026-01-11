@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 body {
-  background: linear-gradient(to bottom right, #0f172a, #581c87, #0f172a);
-  color: white;
   font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .glass {
