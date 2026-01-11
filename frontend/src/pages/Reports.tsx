@@ -20,7 +20,7 @@ export function Reports() {
       })
       return response.data
     },
-    enabled: reportType !== '',
+    enabled: true,
   })
 
   const handleDownload = () => {
