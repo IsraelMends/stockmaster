@@ -13,4 +13,4 @@ cmds = [
 ]
 
 [start]
-cmd = "npm start"
+cmd = "npm run start:prod"
