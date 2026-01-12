@@ -180,7 +180,20 @@ cd backend
 npm install
 ```
 
-3. **Configure as variáveis de ambiente**
+3. **Configure o banco de dados**
+
+   **Opção A: Usar Supabase (Recomendado) 🗄️**
+   - Siga o guia completo: [CONFIGURAR-SUPABASE.md](./CONFIGURAR-SUPABASE.md)
+   - Crie projeto no Supabase: https://supabase.com
+   - Copie a `DATABASE_URL` do Supabase
+
+   **Opção B: PostgreSQL Local**
+   - Inicie o PostgreSQL e crie o banco:
+     ```bash
+     createdb stockmaster
+     ```
+
+4. **Configure as variáveis de ambiente**
 ```bash
 # Crie o arquivo .env na pasta backend
 cp .env.example .env
@@ -192,20 +205,18 @@ Conteúdo do `.env`:
 ```env
 PORT=3333
 NODE_ENV=development
-DATABASE_URL="postgresql://seu_usuario@localhost:5432/stockmaster"
+# Se usar Supabase, cole a DATABASE_URL do Supabase aqui
+DATABASE_URL="postgresql://postgres:[PASSWORD]@db.xxxxx.supabase.co:5432/postgres?schema=public"
+# Ou se usar PostgreSQL local:
+# DATABASE_URL="postgresql://seu_usuario@localhost:5432/stockmaster"
 JWT_SECRET="sua-chave-secreta"
 JWT_EXPIRES_IN="7d"
 ```
 
-4. **Inicie o PostgreSQL e crie o banco**
-```bash
-createdb stockmaster
-```
-
 5. **Execute as migrations do Prisma**
 ```bash
-npx prisma db push
-npx prisma generate
+npm run db:generate
+npm run db:push
 ```
 
 6. **Inicie o servidor**
@@ -242,11 +253,14 @@ O frontend estará rodando em `http://localhost:5173`
 
 Para colocar o projeto na nuvem e torná-lo acessível publicamente:
 
+📖 **[CONFIGURAR-SUPABASE.md](./CONFIGURAR-SUPABASE.md)** - Configure o banco Supabase primeiro! 🗄️
+
 📖 **[COMO-DEPLOYAR.md](./COMO-DEPLOYAR.md)** - Guia rápido e simples (Recomendado)
 
 📖 **[DEPLOY.md](./DEPLOY.md)** - Guia completo com todas as opções
 
 ### Opções Recomendadas:
+- **Supabase** 🗄️ - Banco PostgreSQL gratuito e robusto (Recomendado)
 - **Railway** ⭐ - Mais fácil e grátis para começar
 - **Render** - Grátis, pode "dormir" após inatividade  
 - **Vercel** - Excelente para frontend
