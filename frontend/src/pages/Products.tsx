@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Plus, Search, X, Edit2, Trash2, Package as PackageIcon } from 'lucide-react'
 import api from '../lib/api'
-import { useToastContext } from '../contexts/ToastContext'
 import { ProductSkeleton } from '../components/Skeleton'
+import toast from 'react-hot-toast'
 
 interface Product {
   id: number
@@ -33,7 +35,6 @@ interface Supplier {
 
 export function Products() {
   const queryClient = useQueryClient()
-  const { showToast } = useToastContext()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [search, setSearch] = useState('')
@@ -66,7 +67,7 @@ export function Products() {
     queryKey: ['categories'],
     queryFn: async () => {
       const response = await api.get('/categories')
-      return response.data.data || []
+      return response.data
     },
   })
 
@@ -75,44 +76,41 @@ export function Products() {
     queryKey: ['suppliers'],
     queryFn: async () => {
       const response = await api.get('/suppliers')
-      return response.data.data || []
+      return response.data
     },
   })
 
-  // Create/Update mutation
+  // Create/Update product mutation
   const productMutation = useMutation({
-    mutationFn: async (productData: Partial<Product>) => {
+    mutationFn: async (productData: Partial<Product> & { id?: number }) => {
       if (editingProduct) {
-        return api.put(`/products/${editingProduct.id}`, productData)
+        return await api.put(`/products/${editingProduct.id}`, productData)
       } else {
-        return api.post('/products', productData)
+        return await api.post('/products', productData)
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
       setIsModalOpen(false)
       setEditingProduct(null)
-      showToast(
-        editingProduct ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!',
-        'success'
-      )
+      toast.success(editingProduct ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!')
     },
     onError: () => {
-      showToast('Erro ao salvar produto. Tente novamente.', 'error')
+      toast.error('Erro ao salvar produto. Tente novamente.')
     },
   })
 
-  // Delete mutation
+  // Delete product mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return api.delete(`/products/${id}`)
+      return await api.delete(`/products/${id}`)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
-      showToast('Produto desativado com sucesso!', 'success')
+      toast.success('Produto desativado com sucesso!')
     },
     onError: () => {
-      showToast('Erro ao desativar produto. Tente novamente.', 'error')
+      toast.error('Erro ao desativar produto. Tente novamente.')
     },
   })
 
@@ -121,8 +119,8 @@ export function Products() {
     setIsModalOpen(true)
   }
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm('Tem certeza que deseja desativar este produto? Esta ação pode ser revertida editando o produto.')) {
+  const handleDelete = (id: number) => {
+    if (confirm('Deseja realmente desativar este produto?')) {
       deleteMutation.mutate(id)
     }
   }
@@ -130,13 +128,13 @@ export function Products() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
-    const productData = {
+    const productData: Partial<Product> = {
       name: formData.get('name') as string,
       barcode: formData.get('barcode') as string || undefined,
       description: formData.get('description') as string || undefined,
       costPrice: parseFloat(formData.get('costPrice') as string),
       salePrice: parseFloat(formData.get('salePrice') as string),
-      currentStock: parseInt(formData.get('currentStock') as string),
+      currentStock: parseInt(formData.get('currentStock') as string) || 0,
       minimumStock: parseInt(formData.get('minimumStock') as string) || 0,
       unit: formData.get('unit') as Product['unit'],
       categoryId: parseInt(formData.get('categoryId') as string),
@@ -149,27 +147,33 @@ export function Products() {
   const totalPages = data?.totalPages || 1
 
   return (
-    <div className="px-4 py-6 sm:px-0">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Produtos</h1>
-        <button
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Produtos</h1>
+          <p className="text-slate-600 dark:text-slate-400 mt-1">Gerencie seu inventário</p>
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => {
             setEditingProduct(null)
             setIsModalOpen(true)
           }}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-semibold rounded-lg shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-200"
         >
+          <Plus className="w-5 h-5" />
           Novo Produto
-        </button>
+        </motion.button>
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Buscar
-            </label>
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6 shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
               value={search}
@@ -177,159 +181,157 @@ export function Products() {
                 setSearch(e.target.value)
                 setPage(1)
               }}
-              placeholder="Nome ou código de barras"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Buscar por nome ou código..."
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400 focus:border-transparent transition-all text-sm"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Categoria
-            </label>
-            <select
-              value={categoryFilter}
-              onChange={(e) => {
-                setCategoryFilter(e.target.value)
-                setPage(1)
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="">Todas</option>
-              {categories?.map((cat: Category) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Fornecedor
-            </label>
-            <select
-              value={supplierFilter}
-              onChange={(e) => {
-                setSupplierFilter(e.target.value)
-                setPage(1)
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="">Todos</option>
-              {suppliers?.map((sup: Supplier) => (
-                <option key={sup.id} value={sup.id}>
-                  {sup.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Status
-            </label>
-            <select
-              value={activeFilter}
-              onChange={(e) => {
-                setActiveFilter(e.target.value)
-                setPage(1)
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="">Todos</option>
-              <option value="true">Ativos</option>
-              <option value="false">Inativos</option>
-            </select>
-          </div>
+
+          {/* Category Filter */}
+          <select
+            value={categoryFilter}
+            onChange={(e) => {
+              setCategoryFilter(e.target.value)
+              setPage(1)
+            }}
+            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400 focus:border-transparent transition-all text-sm"
+          >
+            <option value="">Todas as categorias</option>
+            {categories?.map((cat: Category) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Supplier Filter */}
+          <select
+            value={supplierFilter}
+            onChange={(e) => {
+              setSupplierFilter(e.target.value)
+              setPage(1)
+            }}
+            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400 focus:border-transparent transition-all text-sm"
+          >
+            <option value="">Todos os fornecedores</option>
+            {suppliers?.map((sup: Supplier) => (
+              <option key={sup.id} value={sup.id}>
+                {sup.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Status Filter */}
+          <select
+            value={activeFilter}
+            onChange={(e) => {
+              setActiveFilter(e.target.value)
+              setPage(1)
+            }}
+            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400 focus:border-transparent transition-all text-sm"
+          >
+            <option value="">Todos os status</option>
+            <option value="true">Ativos</option>
+            <option value="false">Inativos</option>
+          </select>
         </div>
       </div>
 
       {/* Products List */}
       {isLoading ? (
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
+        <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
             <ProductSkeleton key={i} />
           ))}
         </div>
       ) : data?.data?.length === 0 ? (
-        <div className="bg-white shadow rounded-lg p-8 text-center">
-          <p className="text-gray-500">Nenhum produto encontrado</p>
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-12 text-center shadow-sm">
+          <PackageIcon className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+          <p className="text-slate-600 dark:text-slate-400">Nenhum produto encontrado</p>
         </div>
       ) : (
         <>
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <ul className="divide-y divide-gray-200">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+            <div className="divide-y divide-slate-200 dark:divide-slate-700">
               {data?.data?.map((product: Product) => (
-                <li key={product.id} className="px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center">
-                        <p className="text-sm font-medium text-gray-900">
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 sm:p-6 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-base font-semibold text-slate-900 dark:text-white">
                           {product.name}
-                        </p>
+                        </h3>
                         {!product.active && (
-                          <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300">
                             Inativo
                           </span>
                         )}
                         {product.currentStock <= product.minimumStock && (
-                          <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300">
                             Estoque Baixo
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {product.category?.name} • {product.supplier?.name}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Estoque: {product.currentStock} {product.unit} | Mínimo: {product.minimumStock} {product.unit}
-                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
+                        <span>{product.category?.name} • {product.supplier?.name}</span>
+                        <span>Estoque: {product.currentStock} {product.unit}</span>
+                        {product.barcode && <span>Code: {product.barcode}</span>}
+                      </div>
                     </div>
-                    <div className="ml-4 flex items-center space-x-4">
+                    <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-lg font-bold text-slate-900 dark:text-white">
                           R$ {product.salePrice.toFixed(2)}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
                           Custo: R$ {product.costPrice.toFixed(2)}
                         </p>
                       </div>
-                      <div className="flex space-x-2">
+                      <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleEdit(product)}
-                          className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                          className="p-2 text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors"
+                          title="Editar"
                         >
-                          Editar
+                          <Edit2 className="w-5 h-5" />
                         </button>
                         <button
                           onClick={() => handleDelete(product.id)}
-                          className="text-red-600 hover:text-red-900 text-sm font-medium"
+                          className="p-2 text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          title="Desativar"
                         >
-                          Desativar
+                          <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
                     </div>
                   </div>
-                </li>
+                </motion.div>
               ))}
-            </ul>
+            </div>
           </div>
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <div className="text-sm text-gray-700">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-slate-600 dark:text-slate-400">
                 Página {page} de {totalPages}
               </div>
-              <div className="flex space-x-2">
+              <div className="flex gap-2">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Anterior
                 </button>
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Próxima
                 </button>
@@ -340,192 +342,244 @@ export function Products() {
       )}
 
       {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {editingProduct ? 'Editar Produto' : 'Novo Produto'}
-              </h3>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Nome *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    required
-                    defaultValue={editingProduct?.name}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Código de Barras
-                  </label>
-                  <input
-                    type="text"
-                    name="barcode"
-                    defaultValue={editingProduct?.barcode}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Descrição
-                  </label>
-                  <textarea
-                    name="description"
-                    rows={3}
-                    defaultValue={editingProduct?.description}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Preço de Custo *
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      name="costPrice"
-                      required
-                      defaultValue={editingProduct?.costPrice}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    />
+      <AnimatePresence>
+        {isModalOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setIsModalOpen(false)
+                setEditingProduct(null)
+              }}
+              className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed inset-0 z-50 overflow-y-auto p-4"
+            >
+              <div className="flex min-h-full items-center justify-center">
+                <div className="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
+                  {/* Header */}
+                  <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                      {editingProduct ? 'Editar Produto' : 'Novo Produto'}
+                    </h3>
+                    <button
+                      onClick={() => {
+                        setIsModalOpen(false)
+                        setEditingProduct(null)
+                      }}
+                      className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Preço de Venda *
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      name="salePrice"
-                      required
-                      defaultValue={editingProduct?.salePrice}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                  </div>
+
+                  {/* Form */}
+                  <form onSubmit={handleSubmit} className="p-6">
+                    <div className="space-y-5">
+                      {/* Name and Barcode */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Nome *
+                          </label>
+                          <input
+                            type="text"
+                            name="name"
+                            required
+                            defaultValue={editingProduct?.name}
+                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400 focus:border-transparent transition-all text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Código de Barras
+                          </label>
+                          <input
+                            type="text"
+                            name="barcode"
+                            defaultValue={editingProduct?.barcode}
+                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400 focus:border-transparent transition-all text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Description */}
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                          Descrição
+                        </label>
+                        <textarea
+                          name="description"
+                          rows={3}
+                          defaultValue={editingProduct?.description}
+                          className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400 focus:border-transparent transition-all text-sm resize-none"
+                        />
+                      </div>
+
+                      {/* Prices */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Preço de Custo *
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            name="costPrice"
+                            required
+                            defaultValue={editingProduct?.costPrice}
+                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400 focus:border-transparent transition-all text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Preço de Venda *
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            name="salePrice"
+                            required
+                            defaultValue={editingProduct?.salePrice}
+                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400 focus:border-transparent transition-all text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Stock */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Estoque Atual *
+                          </label>
+                          <input
+                            type="number"
+                            name="currentStock"
+                            required
+                            defaultValue={editingProduct?.currentStock}
+                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400 focus:border-transparent transition-all text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Estoque Mínimo
+                          </label>
+                          <input
+                            type="number"
+                            name="minimumStock"
+                            defaultValue={editingProduct?.minimumStock || 0}
+                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400 focus:border-transparent transition-all text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Unit, Category, Supplier */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Unidade *
+                          </label>
+                          <select
+                            name="unit"
+                            required
+                            defaultValue={editingProduct?.unit}
+                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400 focus:border-transparent transition-all text-sm"
+                          >
+                            <option value="UN">Unidade (UN)</option>
+                            <option value="KG">Quilograma (KG)</option>
+                            <option value="LT">Litro (LT)</option>
+                            <option value="PCT">Pacote (PCT)</option>
+                            <option value="CX">Caixa (CX)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Categoria *
+                          </label>
+                          <select
+                            name="categoryId"
+                            required
+                            defaultValue={editingProduct?.categoryId}
+                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400 focus:border-transparent transition-all text-sm"
+                          >
+                            <option value="">Selecione...</option>
+                            {categories?.map((cat: Category) => (
+                              <option key={cat.id} value={cat.id}>
+                                {cat.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Fornecedor *
+                          </label>
+                          <select
+                            name="supplierId"
+                            required
+                            defaultValue={editingProduct?.supplierId}
+                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400 focus:border-transparent transition-all text-sm"
+                          >
+                            <option value="">Selecione...</option>
+                            {suppliers?.map((sup: Supplier) => (
+                              <option key={sup.id} value={sup.id}>
+                                {sup.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Active checkbox */}
+                      {editingProduct && (
+                        <div>
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              name="active"
+                              value="true"
+                              defaultChecked={editingProduct.active}
+                              className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-purple-600 focus:ring-purple-500 dark:focus:ring-purple-400 bg-slate-50 dark:bg-slate-900"
+                            />
+                            <span className="text-sm text-slate-700 dark:text-slate-300">Produto ativo</span>
+                          </label>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsModalOpen(false)
+                          setEditingProduct(null)
+                        }}
+                        className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={productMutation.isPending}
+                        className="px-4 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-semibold rounded-lg shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 dark:focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                      >
+                        {productMutation.isPending ? 'Salvando...' : 'Salvar'}
+                      </button>
+                    </div>
+                  </form>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Estoque Atual *
-                    </label>
-                    <input
-                      type="number"
-                      name="currentStock"
-                      required
-                      defaultValue={editingProduct?.currentStock}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Estoque Mínimo
-                    </label>
-                    <input
-                      type="number"
-                      name="minimumStock"
-                      defaultValue={editingProduct?.minimumStock || 0}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Unidade *
-                  </label>
-                  <select
-                    name="unit"
-                    required
-                    defaultValue={editingProduct?.unit}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  >
-                    <option value="UN">Unidade (UN)</option>
-                    <option value="KG">Quilograma (KG)</option>
-                    <option value="LT">Litro (LT)</option>
-                    <option value="PCT">Pacote (PCT)</option>
-                    <option value="CX">Caixa (CX)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Categoria *
-                  </label>
-                  <select
-                    name="categoryId"
-                    required
-                    defaultValue={editingProduct?.categoryId}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  >
-                    <option value="">Selecione uma categoria</option>
-                    {categories?.map((cat: Category) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Fornecedor *
-                  </label>
-                  <select
-                    name="supplierId"
-                    required
-                    defaultValue={editingProduct?.supplierId}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  >
-                    <option value="">Selecione um fornecedor</option>
-                    {suppliers?.map((sup: Supplier) => (
-                      <option key={sup.id} value={sup.id}>
-                        {sup.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                {editingProduct && (
-                  <div>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        name="active"
-                        value="true"
-                        defaultChecked={editingProduct.active}
-                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Ativo</span>
-                    </label>
-                  </div>
-                )}
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsModalOpen(false)
-                      setEditingProduct(null)
-                    }}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={productMutation.isPending}
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-                  >
-                    {productMutation.isPending ? 'Salvando...' : 'Salvar'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
