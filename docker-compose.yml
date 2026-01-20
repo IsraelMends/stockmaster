@@ -39,11 +39,15 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3333
     container_name: stockmaster-frontend
     ports:
       - "80:80"
     depends_on:
       - backend
+    environment:
+      - VITE_API_URL=http://localhost:3333
 
 volumes:
   postgres_data:

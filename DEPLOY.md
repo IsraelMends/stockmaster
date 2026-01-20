@@ -6,23 +6,50 @@ Este guia explica como colocar seu projeto na nuvem para ficar acessível public
 
 ## 🎯 Opções de Deploy
 
+### Opção 0: Usar Supabase como Banco de Dados 🗄️ (Recomendado)
+- ✅ Banco PostgreSQL gratuito e robusto
+- ✅ Interface web para gerenciar dados
+- ✅ Funciona com qualquer plataforma de deploy
+- ✅ 500 MB grátis (suficiente para começar)
+- ✅ Veja o guia completo: [CONFIGURAR-SUPABASE.md](./CONFIGURAR-SUPABASE.md)
+
 ### Opção 1: Railway (Recomendado - Mais Fácil) ⭐
 - ✅ Grátis para começar
 - ✅ Muito fácil de usar
 - ✅ Deploy automático do GitHub
-- ✅ Banco PostgreSQL incluído
+- ✅ Banco PostgreSQL incluído (ou use Supabase)
 - ✅ Suporta Docker
 
 ### Opção 2: Render
 - ✅ Grátis para começar
 - ✅ Fácil de usar
-- ✅ Banco PostgreSQL incluído
+- ✅ Banco PostgreSQL incluído (ou use Supabase)
 - ⚠️ Pode "dormir" após inatividade (plano gratuito)
 
 ### Opção 3: Vercel (Frontend) + Railway/Render (Backend)
 - ✅ Vercel excelente para frontend
 - ✅ Deploy muito rápido
 - ⚠️ Precisa configurar 2 serviços
+
+---
+
+## 🗄️ Configurar Supabase (Recomendado)
+
+**Antes de fazer o deploy, configure o Supabase como banco de dados:**
+
+1. **Siga o guia completo:** [CONFIGURAR-SUPABASE.md](./CONFIGURAR-SUPABASE.md)
+
+2. **Resumo rápido:**
+   - Crie projeto no Supabase: https://supabase.com
+   - Copie a `DATABASE_URL` (Connection pooling para produção)
+   - Configure no `.env` local e nas variáveis de ambiente da plataforma
+   - Execute `npm run db:push` para criar as tabelas
+
+3. **Vantagens do Supabase:**
+   - Banco separado do deploy (mais flexível)
+   - Interface web para ver/editar dados
+   - Funciona com qualquer plataforma
+   - Plano gratuito generoso
 
 ---
 
@@ -68,7 +95,18 @@ git push -u origin main
      JWT_EXPIRES_IN=7d
      ```
 
-4. **Adicione o banco PostgreSQL:**
+4. **Configure o banco de dados:**
+   
+   **Opção A: Usar Supabase (Recomendado) 🗄️**
+   - Configure o Supabase primeiro: [CONFIGURAR-SUPABASE.md](./CONFIGURAR-SUPABASE.md)
+   - No Supabase, vá em "Settings" → "Database"
+   - Copie a string de "Connection pooling" (porta 6543)
+   - Adicione como variável de ambiente no Railway:
+     ```
+     DATABASE_URL=postgresql://postgres.xxxxx:[PASSWORD]@aws-0-sa-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+     ```
+   
+   **Opção B: Usar PostgreSQL do Railway**
    - Clique em "New" → "Database" → "PostgreSQL"
    - Railway vai criar automaticamente
    - Copie a `DATABASE_URL` que aparece
@@ -78,8 +116,8 @@ git push -u origin main
      ```
 
 5. **Configure o Prisma:**
-   - Railway vai executar automaticamente
-   - Ou adicione no Build Command: `npx prisma db push`
+   - Adicione no Build Command: `npm install && npx prisma generate && npx prisma db push && npm run build`
+   - Ou execute manualmente após o deploy: `npx prisma db push`
 
 ### Passo 4: Deploy do Frontend
 
@@ -140,7 +178,17 @@ git push -u origin main
    JWT_EXPIRES_IN=7d
    ```
 
-5. **Adicione banco PostgreSQL:**
+5. **Configure o banco de dados:**
+   
+   **Opção A: Usar Supabase (Recomendado) 🗄️**
+   - Configure o Supabase primeiro: [CONFIGURAR-SUPABASE.md](./CONFIGURAR-SUPABASE.md)
+   - No Supabase, copie a string de "Connection pooling"
+   - Adicione como variável no Render:
+     ```
+     DATABASE_URL=postgresql://postgres.xxxxx:[PASSWORD]@aws-0-sa-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+     ```
+   
+   **Opção B: Usar PostgreSQL do Render**
    - New → PostgreSQL
    - Copie a `DATABASE_URL` interna
    - Adicione como variável no backend
@@ -189,9 +237,9 @@ git push -u origin main
 - [ ] Código está no GitHub
 - [ ] `.env` não está commitado (deve estar no `.gitignore`)
 - [ ] Dockerfiles estão corretos
-- [ ] Variáveis de ambiente configuradas
-- [ ] Banco de dados configurado
-- [ ] Prisma migrations prontas
+- [ ] **Banco Supabase configurado** (veja [CONFIGURAR-SUPABASE.md](./CONFIGURAR-SUPABASE.md))
+- [ ] Variáveis de ambiente configuradas (incluindo `DATABASE_URL` do Supabase)
+- [ ] Prisma schema enviado ao banco (`npm run db:push`)
 - [ ] Frontend aponta para URL do backend correto
 
 ---
@@ -242,8 +290,10 @@ curl -X POST https://seu-backend.railway.app/auth/register \
 ## 🆘 Problemas Comuns
 
 ### Backend não conecta no banco
-- Verifique a `DATABASE_URL` (use a interna da plataforma)
+- **Se usar Supabase:** Verifique se usou Connection Pooling (porta 6543) em produção
+- **Se usar banco da plataforma:** Verifique a `DATABASE_URL` (use a interna da plataforma)
 - Verifique se o banco está rodando
+- Verifique se executou `npx prisma db push` para criar as tabelas
 
 ### Frontend não conecta no backend
 - Verifique o `VITE_API_URL`

@@ -47,6 +47,18 @@ O **StockMaster** é um sistema completo de controle de estoque que permite:
 | React Router | Roteamento |
 | Axios | Cliente HTTP |
 
+**Funcionalidades do Frontend:**
+- ✅ Interface completa e responsiva
+- ✅ Sistema de notificações (toasts)
+- ✅ Skeleton loaders para melhor UX
+- ✅ CRUD completo de todas as entidades
+- ✅ Filtros e busca avançada
+- ✅ Paginação
+- ✅ Exportação de relatórios (JSON/CSV)
+- ✅ Proteção de rotas (Admin/Operador)
+- ✅ Menu lateral responsivo
+- ✅ Animações e transições suaves
+
 ---
 
 ## 📁 Estrutura do Projeto
@@ -168,7 +180,20 @@ cd backend
 npm install
 ```
 
-3. **Configure as variáveis de ambiente**
+3. **Configure o banco de dados**
+
+   **Opção A: Usar Supabase (Recomendado) 🗄️**
+   - Siga o guia completo: [CONFIGURAR-SUPABASE.md](./CONFIGURAR-SUPABASE.md)
+   - Crie projeto no Supabase: https://supabase.com
+   - Copie a `DATABASE_URL` do Supabase
+
+   **Opção B: PostgreSQL Local**
+   - Inicie o PostgreSQL e crie o banco:
+     ```bash
+     createdb stockmaster
+     ```
+
+4. **Configure as variáveis de ambiente**
 ```bash
 # Crie o arquivo .env na pasta backend
 cp .env.example .env
@@ -180,20 +205,18 @@ Conteúdo do `.env`:
 ```env
 PORT=3333
 NODE_ENV=development
-DATABASE_URL="postgresql://seu_usuario@localhost:5432/stockmaster"
+# Se usar Supabase, cole a DATABASE_URL do Supabase aqui
+DATABASE_URL="postgresql://postgres:[PASSWORD]@db.xxxxx.supabase.co:5432/postgres?schema=public"
+# Ou se usar PostgreSQL local:
+# DATABASE_URL="postgresql://seu_usuario@localhost:5432/stockmaster"
 JWT_SECRET="sua-chave-secreta"
 JWT_EXPIRES_IN="7d"
 ```
 
-4. **Inicie o PostgreSQL e crie o banco**
-```bash
-createdb stockmaster
-```
-
 5. **Execute as migrations do Prisma**
 ```bash
-npx prisma db push
-npx prisma generate
+npm run db:generate
+npm run db:push
 ```
 
 6. **Inicie o servidor**
@@ -230,11 +253,14 @@ O frontend estará rodando em `http://localhost:5173`
 
 Para colocar o projeto na nuvem e torná-lo acessível publicamente:
 
+📖 **[CONFIGURAR-SUPABASE.md](./CONFIGURAR-SUPABASE.md)** - Configure o banco Supabase primeiro! 🗄️
+
 📖 **[COMO-DEPLOYAR.md](./COMO-DEPLOYAR.md)** - Guia rápido e simples (Recomendado)
 
 📖 **[DEPLOY.md](./DEPLOY.md)** - Guia completo com todas as opções
 
 ### Opções Recomendadas:
+- **Supabase** 🗄️ - Banco PostgreSQL gratuito e robusto (Recomendado)
 - **Railway** ⭐ - Mais fácil e grátis para começar
 - **Render** - Grátis, pode "dormir" após inatividade  
 - **Vercel** - Excelente para frontend
@@ -702,15 +728,20 @@ npm run db:studio
 - [x] Exportar dados em CSV/JSON
 - [ ] Exportar PDF/Excel
 
-### Fase 5: Frontend 🔄
+### Fase 5: Frontend ✅
 - [x] Setup React + TypeScript + Vite
 - [x] Configuração TailwindCSS
 - [x] Configuração React Query
 - [x] Tela de Login
-- [x] Dashboard básico
-- [x] Listagem de Produtos
-- [ ] CRUD completo de todas as entidades
-- [ ] Gráficos e visualizações
+- [x] Dashboard completo
+- [x] CRUD completo de todas as entidades (Produtos, Categorias, Fornecedores, Usuários, Movimentações)
+- [x] Página de Alertas
+- [x] Página de Relatórios com exportação
+- [x] Sistema de notificações (toasts)
+- [x] Skeleton loaders
+- [x] Menu lateral responsivo
+- [x] Proteção de rotas (Admin/Operador)
+- [x] Melhorias de UX
 
 ### Fase 6: Deploy ✅
 - [x] Containerização (Docker)

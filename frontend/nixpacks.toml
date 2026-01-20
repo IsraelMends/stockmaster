@@ -1,10 +1,11 @@
+# Configuração Nixpacks para Railway (alternativa ao Dockerfile)
+
 [phases.setup]
 nixPkgs = ["nodejs_20"]
 
 [phases.install]
 cmds = [
-  "npm install",
-  "npx prisma generate"
+  "npm install"
 ]
 
 [phases.build]
@@ -13,4 +14,4 @@ cmds = [
 ]
 
 [start]
-cmd = "npm run start:prod"
+cmd = "npx serve -s dist -l $PORT"
