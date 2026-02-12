@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --muted-foreground: #64748b;
+  --primary: #8b5cf6;
+  --primary-dark: #7c3aed;
+  --primary-light: #a78bfa;
+  --primary-foreground: #ffffff;
+  --secondary: #06b6d4;
+  --secondary-dark: #0891b2;
+  --secondary-light: #22d3ee;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --accent-glow: rgba(139, 92, 246, 0.25);
+  --border: rgba(15, 23, 42, 0.08);
+  --card-border: rgba(15, 23, 42, 0.06);
+}
+
+.dark {
+  --background: #0a0f1a;
+  --foreground: #f1f5f9;
+  --muted-foreground: #94a3b8;
+  --primary: #a78bfa;
+  --primary-dark: #8b5cf6;
+  --primary-light: #c4b5fd;
+  --primary-foreground: #0f172a;
+  --secondary: #22d3ee;
+  --secondary-dark: #06b6d4;
+  --secondary-light: #67e8f9;
+  --card: #0f172a;
+  --card-foreground: #f1f5f9;
+  --muted: #1e293b;
+  --accent-glow: rgba(167, 139, 250, 0.3);
+  --border: rgba(241, 245, 249, 0.1);
+  --card-border: rgba(241, 245, 249, 0.08);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-light: var(--primary-light);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-dark: var(--secondary-dark);
+  --color-secondary-light: var(--secondary-light);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Grid pattern */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Gradient text with animation */
+.text-gradient {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--primary) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 4s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.glow-primary {
+  box-shadow: 0 0 40px var(--accent-glow);
+}
+
+/* Card elevated */
+.card-elevated {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.dark .card-elevated {
+  box-shadow: none;
+}
+
+.card-elevated:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark .card-elevated:hover {
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+/* Shimmer animation for skeletons */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}

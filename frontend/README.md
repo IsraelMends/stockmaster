@@ -1,16 +1,19 @@
-# StockMaster Frontend
+# StockMaster Frontend (Next.js)
 
-Frontend do Sistema de Controle de Estoque desenvolvido com React, TypeScript, TailwindCSS e React Query.
+Frontend profissional do StockMaster construído com Next.js 16, React 19, TypeScript e TailwindCSS v4.
 
 ## 🚀 Tecnologias
 
+- **Next.js 16** - Framework React com App Router
 - **React 19** - Biblioteca UI
 - **TypeScript** - Tipagem estática
-- **Vite** - Build tool
-- **TailwindCSS** - Estilização
+- **TailwindCSS v4** - Estilização moderna
+- **Framer Motion** - Animações avançadas
 - **React Query** - Gerenciamento de estado e cache
-- **React Router** - Roteamento
 - **Axios** - Cliente HTTP
+- **Lucide React** - Ícones modernos
+- **Recharts** - Gráficos e visualizações
+- **React Hot Toast** - Notificações elegantes
 
 ## 📦 Instalação
 
@@ -18,34 +21,70 @@ Frontend do Sistema de Controle de Estoque desenvolvido com React, TypeScript, T
 npm install
 ```
 
-## ⚙️ Configuração
+## 🔧 Configuração
 
-Crie um arquivo `.env` na raiz do projeto:
+Crie um arquivo `.env.local` na raiz do projeto:
 
 ```env
-VITE_API_URL=http://localhost:3333
+NEXT_PUBLIC_API_URL=http://localhost:3333
 ```
 
-## 🏃 Executar
+## 🏃 Executando
+
+### Desenvolvimento
 
 ```bash
-# Desenvolvimento
 npm run dev
+```
 
-# Build para produção
+Acesse [http://localhost:3000](http://localhost:3000)
+
+### Build de Produção
+
+```bash
 npm run build
-
-# Preview da build
-npm run preview
+npm start
 ```
 
-## 📁 Estrutura
+## 📁 Estrutura do Projeto
 
 ```
-frontend/
-├── src/
-│   ├── components/     # Componentes reutilizáveis
-│   ├── pages/          # Páginas da aplicação
-│   ├── lib/            # Configurações (API client)
-│   └── main.tsx        # Entrada da aplicação
+src/
+├── app/                    # App Router do Next.js
+│   ├── layout.tsx         # Layout raiz
+│   ├── page.tsx           # Página inicial (redirect)
+│   ├── login/             # Página de login
+│   └── globals.css        # Estilos globais
+├── components/            # Componentes React
+│   ├── ui/                # Componentes UI base
+│   └── providers/         # Providers (QueryClient, etc)
+└── lib/                   # Utilitários
+    ├── api.ts             # Cliente Axios configurado
+    └── utils.ts           # Funções utilitárias
 ```
+
+## 🎨 Sistema de Design
+
+O projeto utiliza um sistema de design profissional com:
+
+- **CSS Variables** para temas light/dark
+- **Grid patterns** para backgrounds
+- **Gradientes animados** para textos
+- **Cards elevados** com sombras dinâmicas
+- **Animações suaves** com Framer Motion
+
+## 🔐 Autenticação
+
+O sistema utiliza JWT tokens armazenados no `localStorage`. O cliente Axios está configurado para:
+
+- Adicionar automaticamente o token nas requisições
+- Redirecionar para `/login` em caso de 401
+- Limpar dados de autenticação em caso de erro
+
+## 📝 Próximos Passos
+
+- [ ] Criar páginas protegidas (Dashboard, Products, etc)
+- [ ] Implementar Layout com sidebar
+- [ ] Adicionar todas as funcionalidades CRUD
+- [ ] Implementar relatórios e gráficos
+- [ ] Adicionar testes
